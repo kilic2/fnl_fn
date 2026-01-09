@@ -2,5 +2,5 @@ import axios from "axios";
 
 export const api = axios.create({
   
-  baseURL: "https://api.evdekom.com.tr", 
+  baseURL: "https://api.donanim.evdekom.com.tr", 
 });
