@@ -178,16 +178,16 @@ function App() {
                 </div>
             </Navbar>
 
-            <main className="min-h-screen p-4 bg-cover bg-center bg-fixed" style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1633356122544-f134324ef6cb?w=1600&h=900&fit=crop)', backgroundColor: 'rgba(0,0,0,0.6)', backgroundBlendMode: 'overlay' }}>
+            <main className="bg-gray-50 min-h-screen p-4">
                 <Routes>
                     <Route path="/" element={
                         <>
-                            <div style={{ backgroundColor: 'rgba(0,0,0,0.5)', padding: '80px 0', borderBottom: '1px solid #e5e7eb', marginBottom: '2rem', backdropFilter: 'blur(10px)' }}>
+                            <div style={{ backgroundColor: '#ffffff', padding: '80px 0', borderBottom: '1px solid #e5e7eb', marginBottom: '2rem' }}>
                                 <div className="container mx-auto px-4 text-center">
-                                    <h1 style={{ fontSize: '3rem', fontWeight: 'bold', color: '#ffffff', marginBottom: '1rem', textTransform: 'uppercase', textShadow: '0 2px 10px rgba(0,0,0,0.8)' }}>
+                                    <h1 style={{ fontSize: '3rem', fontWeight: 'bold', color: '#000000', marginBottom: '1rem', textTransform: 'uppercase' }}>
                                         Güncel Donanım İncelemeleri
                                     </h1>
-                                    <p style={{ fontSize: '1.25rem', color: '#e0e0e0', maxWidth: '48rem', margin: '0 auto', textShadow: '0 1px 5px rgba(0,0,0,0.8)' }}>
+                                    <p style={{ fontSize: '1.25rem', color: '#6b7280', maxWidth: '48rem', margin: '0 auto' }}>
                                         En son teknoloji ürünlerinin detaylı analizleri ve performans testleri
                                     </p>
                                 </div>
