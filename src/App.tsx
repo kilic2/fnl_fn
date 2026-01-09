@@ -164,13 +164,13 @@ function App() {
                                 onClick={() => { setLoginType(true); setShowModal(true); }}
                                 className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                             >
-                                GiriÅŸ Yap
+                                Giriş Yap
                             </button>
                             <button
                                 onClick={() => { setLoginType(false); setShowModal(true); }}
                                 className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                             >
-                                KayÄ±t Ol
+                                Kayıt Ol
                             </button>
                         </div>
                     )}
