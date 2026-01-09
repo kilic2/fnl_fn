@@ -7,6 +7,8 @@ import {
     Navbar,
     NavbarBrand,
     NavbarToggle,
+    NavbarLink,
+    NavbarCollapse,
     Table,
 } from "flowbite-react";
 import { useState, useEffect } from "react";
@@ -157,21 +159,20 @@ function App() {
                             <DropdownItem onClick={handleLogout}>Çıkış yap</DropdownItem>
                         </Dropdown>
                     ) : (
-                        <>
+                        <div className="flex gap-4">
                             <button
-                                className="text-white px-4 py-2 rounded-lg hover:bg-blue-800"
                                 onClick={() => { setLoginType(true); setShowModal(true); }}
+                                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                             >
-                                Giriş Yap
+                                GiriÅŸ Yap
                             </button>
-
                             <button
-                                className="ml-4 text-white px-4 py-2 rounded-lg hover:bg-green-600"
                                 onClick={() => { setLoginType(false); setShowModal(true); }}
+                                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                             >
-                                Kayıt Ol
+                                KayÄ±t Ol
                             </button>
-                        </>
+                        </div>
                     )}
                     <NavbarToggle />
                 </div>
