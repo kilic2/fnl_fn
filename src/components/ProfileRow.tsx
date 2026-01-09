@@ -5,8 +5,8 @@ import {
     ModalHeader,
     TableCell,
     TableRow,
-    Badge, // Tagleri güzel göstermek için Badge ekledim
-    Avatar, // Fotoyu göstermek için Avatar ekledim
+    Badge,
+    Avatar,
 } from "flowbite-react";
 import type { Profile } from "../types/Profile";
 import { ProfileFormModal } from "./ProfileFormModal";
@@ -45,16 +45,16 @@ export const ProfileRow = ({ fetchProfiles, profile, handleClick }: Props) => {
                                 color="red"
                                 onClick={() => {
                                     api
-                                        .request({
-                                            url: "profiles/" + profile.id,
-                                            method: "delete",
-                                        })
+                                        .delete(`/profiles/${profile.id}`)
                                         .then(() => {
                                             fetchProfiles();
                                             setShowDelete(false);
                                             toast.success("Profil silindi");
                                         })
-                                        .catch(() => toast.error("Bir hata oluştu"));
+                                        .catch((err) => {
+                                            console.error(err);
+                                            toast.error("Bir hata oluştu");
+                                        });
                                 }}
                             >
                                 Evet, eminim
@@ -74,7 +74,6 @@ export const ProfileRow = ({ fetchProfiles, profile, handleClick }: Props) => {
             >
                 <TableCell>{profile.id}</TableCell>
 
-                {/* Fotoğrafı URL string yerine görsel olarak gösterelim */}
                 <TableCell>
                     <Avatar img={profile.photo} rounded size="sm" />
                 </TableCell>
@@ -85,15 +84,12 @@ export const ProfileRow = ({ fetchProfiles, profile, handleClick }: Props) => {
                 <TableCell>{profile.email}</TableCell>
                 <TableCell>{profile.profileType?.name}</TableCell>
 
-                {/* Tag Düzeltmesi */}
                 <TableCell>
                     <div className="flex flex-wrap gap-2">
-                        {/* Eğer tags boşsa hata vermesin diye ?. ve map kullanıyoruz */}
-                        {/* Tag yapın { id: number, name: string } şeklindeyse 'tag.name' kullan */}
                         {profile.tags && profile.tags.length > 0 ? (
                             profile.tags.map((tag: any, index: number) => (
                                 <Badge key={index} color="info">
-                                    {tag.name} {/* Backenddeki tag isimlendirmesine göre burayı değiştir (örn: tag.tagName) */}
+                                    {tag.name}
                                 </Badge>
                             ))
                         ) : (
@@ -104,7 +100,6 @@ export const ProfileRow = ({ fetchProfiles, profile, handleClick }: Props) => {
 
                 <TableCell>
                     <div className="flex gap-2">
-                        {/* ProfileFormModal tıklandığında satır tıklamasını engellemek gerekebilir */}
                         <div onClick={(e) => e.stopPropagation()}>
                             <ProfileFormModal fetchProfiles={fetchProfiles} profile={profile} />
                         </div>
@@ -113,7 +108,7 @@ export const ProfileRow = ({ fetchProfiles, profile, handleClick }: Props) => {
                             size="xs"
                             color="red"
                             onClick={(e) => {
-                                e.stopPropagation(); // ÖNEMLİ: Satıra tıklamayı engeller
+                                e.stopPropagation();
                                 setShowDelete(true);
                             }}
                         >
