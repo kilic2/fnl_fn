@@ -1,4 +1,4 @@
-import {
+﻿import {
     Button,
     Label,
     Modal,
@@ -147,10 +147,10 @@ export const ProfileFormModal = ({ show, setShow, loginType, onLoginSuccess }: P
             resetForm();
             setShow(false);
         }} popup>
-            <ModalHeader>
-                {loginType ? "Giriş Yap" : "Kaydol"}
+            <ModalHeader className="border-b border-gray-200 px-6 py-4">
+                <span>{loginType ? "Giriş Yap" : "Kaydol"}</span>
             </ModalHeader>
-            <ModalBody>
+            <ModalBody className="p-6">
                 <div className="space-y-6">
                     <div>
                         <div className="mb-2 block">
@@ -160,6 +160,7 @@ export const ProfileFormModal = ({ show, setShow, loginType, onLoginSuccess }: P
                             id="u"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
+                            placeholder="Kullanıcı adınız"
                         />
                     </div>
 
@@ -170,8 +171,10 @@ export const ProfileFormModal = ({ show, setShow, loginType, onLoginSuccess }: P
                             </div>
                             <TextInput
                                 id="e"
+                                type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
+                                placeholder="örnek@email.com"
                             />
                         </div>
                     )}
@@ -185,6 +188,7 @@ export const ProfileFormModal = ({ show, setShow, loginType, onLoginSuccess }: P
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
+                            placeholder="Şifre"
                         />
                     </div>
 
@@ -192,13 +196,14 @@ export const ProfileFormModal = ({ show, setShow, loginType, onLoginSuccess }: P
                         <>
                             <div>
                                 <div className="mb-2 block">
-                                    <Label htmlFor="rp">Şifre Tekrar</Label>
+                                    <Label htmlFor="rp">Şifreyi Tekrarla</Label>
                                 </div>
                                 <TextInput
                                     id="rp"
                                     type="password"
                                     value={rpPassword}
                                     onChange={(e) => setRpPassword(e.target.value)}
+                                    placeholder="Şifreyi tekrar yazın"
                                 />
                             </div>
 
@@ -256,8 +261,8 @@ export const ProfileFormModal = ({ show, setShow, loginType, onLoginSuccess }: P
                         </>
                     )}
 
-                    <div className="w-full">
-                        <Button onClick={handleSave} className="w-full">
+                    <div className="w-full pt-4">
+                        <Button onClick={handleSave} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded">
                             {loginType ? "Giriş Yap" : "Kaydol"}
                         </Button>
                     </div>
@@ -265,4 +270,6 @@ export const ProfileFormModal = ({ show, setShow, loginType, onLoginSuccess }: P
             </ModalBody>
         </Modal>
     );
-}
+};
+
+export default ProfileFormModal;
