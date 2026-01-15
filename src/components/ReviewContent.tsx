@@ -67,11 +67,30 @@ export default function ReviewContent({ user }: ReviewContentProps) {
             };
 
             const response = await api.post('/comment', payload);
+            const returned = response.data || {};
+
+            // determine user object for the new comment: prefer server-returned user, otherwise fetch profile
+            let commentUser = returned.user as any | undefined;
+            if (!commentUser && user.id) {
+                try {
+                    const profileRes = await api.get(`/profiles/${user.id}`);
+                    const p = profileRes.data || {};
+                    commentUser = {
+                        username: p.username || user.name,
+                        photo: p.photo,
+                        tags: p.tags || p.userTags || []
+                    };
+                } catch (err) {
+                    // fallback minimal user
+                    commentUser = { username: user.name, tags: [] };
+                }
+            }
 
             const newComment = {
-                ...response.data,
-                date: new Date(),
-                user: { username: user.name, tags: [] }
+                id: returned.id ?? `temp-${Date.now()}`,
+                ...returned,
+                date: returned.date ? new Date(returned.date) : new Date(),
+                user: commentUser || { username: user.name, tags: [] }
             };
 
             setReview(prev => prev ? ({
