@@ -241,7 +241,14 @@ export default function ReviewContent({ user }: ReviewContentProps) {
                                 <button
                                     onClick={handleSubmitComment}
                                     disabled={isSubmitting || !commentText.trim()}
-                                    className={`bg-black hover:bg-gray-800 text-white font-bold py-2 px-6 rounded disabled:opacity-50 disabled:cursor-not-allowed flex items-center`}
+                                    className={`font-bold py-2 px-6 rounded flex items-center`} 
+                                    style={{
+                                        backgroundColor: '#000',
+                                        color: '#fff',
+                                        minWidth: 140,
+                                        opacity: (isSubmitting || !commentText.trim()) ? 0.5 : 1,
+                                        cursor: (isSubmitting || !commentText.trim()) ? 'not-allowed' as const : 'pointer' as const,
+                                    }}
                                 >
                                     {isSubmitting ? (
                                         <>
@@ -252,7 +259,7 @@ export default function ReviewContent({ user }: ReviewContentProps) {
                                         'Yorumu Paylaş'
                                     )}
                                 </button>
-                            </div>
+                             </div>
                         </div>
                     ) : (
                         <div className="flex flex-col items-center justify-center py-6 bg-gray-50 rounded-lg border border-dashed border-gray-300">
