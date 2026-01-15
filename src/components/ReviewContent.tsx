@@ -272,22 +272,29 @@ export default function ReviewContent({ user }: ReviewContentProps) {
                                 onChange={(e) => setCommentText(e.target.value)}
                             />
                             <div className="flex justify-end">
-                                <Button
-                                    className="bg-black hover:bg-gray-800 text-white font-bold py-2 px-6 rounded"
+                                <button
+                                    type="button"
                                     onClick={handleSubmitComment}
                                     disabled={isSubmitting || !commentText.trim()}
+                                    className={`font-bold py-2 px-6 rounded flex items-center disabled:opacity-50 disabled:cursor-not-allowed`}
+                                    style={{
+                                        backgroundColor: '#000',
+                                        color: '#fff',
+                                        zIndex: 20,
+                                        border: 'none',
+                                    }}
                                 >
                                     {isSubmitting ? (
                                         <>
                                             <Spinner size="sm" light={true} className="mr-2" />
-                                            Gönderiliyor...
+                                            <span>Gönderiliyor...</span>
                                         </>
                                     ) : (
                                         'Yorumu Paylaş'
                                     )}
-                                </Button>
-                            </div>
-                        </div>
+                                </button>
+                             </div>
+                         </div>
                     ) : (
                         <div className="flex flex-col items-center justify-center py-6 bg-gray-50 rounded-lg border border-dashed border-gray-300">
                             <HiLockClosed className="h-10 w-10 text-gray-400 mb-2" />
