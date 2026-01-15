@@ -1,16 +1,16 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { Button, Card } from "flowbite-react";
-import { HiArrowLeft, HiClock } from "react-icons/hi";
+import { Button, Avatar, Card, Textarea, Spinner } from "flowbite-react";
+import { HiArrowLeft, HiClock, HiUser, HiLockClosed } from "react-icons/hi";
 import { useState, useEffect } from "react";
 import { api } from "../helper/api";
 import type { Review } from "../types/profile";
 
 interface ReviewContentProps {
     user: {
-        isLoggedIn: boolean;
+        isLoggedIn: boolean | null;
         id: number | null;
-        name: string;
-        pp: string;
+        name: string | null ;
+        pp: string | null;
     };
 }
 
@@ -20,7 +20,8 @@ export default function ReviewContent({ user }: ReviewContentProps) {
     const [review, setReview] = useState<Review | null>(null);
     const [loading, setLoading] = useState(true);
 
-    // Commenting disabled
+    const [commentText, setCommentText] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -30,11 +31,16 @@ export default function ReviewContent({ user }: ReviewContentProps) {
                 const reviewResponse = await api.get(`/review/${id}`);
                 const reviewData = reviewResponse.data;
 
-                // Do not fetch or display comments
+                const commentsResponse = await api.get(`/comment/review/${id}`);
+                const commentsData = commentsResponse.data;
+
                 setReview({
                     ...reviewData,
                     date: new Date(reviewData.date),
-                    comments: []
+                    comments: commentsData.map((c: any) => ({
+                        ...c,
+                        date: new Date(c.date)
+                    })) || []
                 });
             } catch (error) {
                 console.error(error);
@@ -48,7 +54,57 @@ export default function ReviewContent({ user }: ReviewContentProps) {
         }
     }, [id]);
 
-    // Comment submission disabled
+    const handleSubmitComment = async () => {
+        if (!commentText.trim() || !review || !user.isLoggedIn) return;
+
+        try {
+            setIsSubmitting(true);
+
+            const payload = {
+                userId: user.id,
+                reviewId: review.id,
+                content: commentText
+            };
+
+            const response = await api.post('/comment', payload);
+            const returned = response.data || {};
+
+            // Prefer server-returned user object. If missing, fetch profile to get stored user data (photo/tags/etc).
+            let commentUser = returned.user as any | undefined;
+            if (!commentUser && user.id) {
+                try {
+                    const profileRes = await api.get(`/profiles/${user.id}`);
+                    const p = profileRes.data || {};
+                    commentUser = {
+                        username: p.username || user.name,
+                        photo: p.photo || user.pp,
+                        tags: p.tags || p.userTags || []
+                    };
+                } catch (err) {
+                    commentUser = { username: user.name, photo: user.pp, tags: [] };
+                }
+            }
+
+            const newComment = {
+                id: returned.id ?? `temp-${Date.now()}`,
+                content: returned.content ?? commentText,
+                date: returned.date ? new Date(returned.date) : new Date(),
+                user: commentUser || { username: user.name, photo: user.pp, tags: [] }
+            };
+
+            setReview(prev => prev ? ({
+                ...prev,
+                comments: [newComment, ...(prev.comments || [])]
+            }) : null);
+
+            setCommentText("");
+        } catch (error) {
+            console.error(error);
+            alert("Yorum gönderilemedi.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -118,7 +174,115 @@ export default function ReviewContent({ user }: ReviewContentProps) {
                 </Card>
 
                 <Card className="shadow-md border-0">
-                    <div className="py-8 text-center text-gray-600">Yorumlar devre dışı bırakıldı.</div>
+                    <div className="flex items-center justify-between mb-6 pb-4 border-b">
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            <HiUser className="h-6 w-6" />
+                            Yorumlar
+                        </h2>
+                        <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                            {review.comments?.length || 0} yorum
+                        </span>
+                    </div>
+
+                    {review.comments && review.comments.length > 0 ? (
+                        <div className="space-y-6">
+                            {review.comments.map((comment) => (
+                                <div key={comment.id} className="bg-gray-50 dark:bg-gray-800 p-4 rounded-xl border border-gray-100">
+                                    <div className="flex items-start gap-4">
+                                        <Avatar
+                                            alt={comment.user?.username || 'User'}
+                                            img={comment.user?.photo || "https://flowbite.com/docs/images/people/profile-picture-5.jpg"}
+                                            rounded
+                                            size="md"
+                                        />
+
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex flex-wrap items-center gap-2 mb-2">
+                                                <span className="font-bold text-gray-900 dark:text-white text-lg">
+                                                    {comment.user?.username || 'Misafir'}
+                                                </span>
+                                                <span className="text-xs text-gray-500">
+                                                    • {comment.date.toLocaleDateString('tr-TR')} {comment.date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+                                                </span>
+                                            </div>
+
+                                            {comment.user?.tags && comment.user.tags.length > 0 && (
+                                                <div className="flex flex-wrap gap-2 mb-3">
+                                                    {comment.user.tags.map((tag: any) => (
+                                                        <span
+                                                            key={tag.id}
+                                                            className="px-2 py-0.5 text-xs font-semibold bg-blue-100 text-blue-700 rounded border border-blue-200"
+                                                        >
+                                                            {tag.name}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                                                {comment.content}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-12">
+                            <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
+                                <HiUser className="h-8 w-8 text-gray-400" />
+                            </div>
+                            <p className="text-gray-500 text-lg">
+                                Henüz yorum yapılmamış.
+                            </p>
+                        </div>
+                    )}
+                </Card>
+
+                <Card className="shadow-md border-0 bg-white">
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                        Yorum Yap
+                    </h3>
+
+                    {user.isLoggedIn ? (
+                        <div>
+                            <Textarea
+                                id="comment"
+                                placeholder="Bu konu hakkında düşünceleriniz neler?"
+                                required
+                                rows={4}
+                                className="mb-4 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
+                                value={commentText}
+                                onChange={(e) => setCommentText(e.target.value)}
+                            />
+                            <div className="flex justify-end">
+                                <Button
+                                    className="bg-black hover:bg-gray-800 text-white font-bold py-2 px-6 rounded"
+                                    onClick={handleSubmitComment}
+                                    disabled={isSubmitting || !commentText.trim()}
+                                >
+                                    {isSubmitting ? (
+                                        <>
+                                            <Spinner size="sm" light={true} className="mr-2" />
+                                            Gönderiliyor...
+                                        </>
+                                    ) : (
+                                        'Yorumu Paylaş'
+                                    )}
+                                </Button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center py-6 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                            <HiLockClosed className="h-10 w-10 text-gray-400 mb-2" />
+                            <p className="text-gray-600 font-medium mb-3">
+                                Yorum yapmak için giriş yapmalısınız.
+                            </p>
+                            <Button color="blue" onClick={() => navigate('/')}>
+                                Giriş Yap / Kayıt Ol
+                            </Button>
+                        </div>
+                    )}
                 </Card>
 
             </div>
