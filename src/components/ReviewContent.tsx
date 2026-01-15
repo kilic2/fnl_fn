@@ -238,20 +238,20 @@ export default function ReviewContent({ user }: ReviewContentProps) {
                                 onChange={(e) => setCommentText(e.target.value)}
                             />
                             <div className="flex justify-end">
-                                <Button
-                                    gradientDuoTone="purpleToBlue"
+                                <button
                                     onClick={handleSubmitComment}
                                     disabled={isSubmitting || !commentText.trim()}
+                                    className={`bg-black hover:bg-gray-800 text-white font-bold py-2 px-6 rounded disabled:opacity-50 disabled:cursor-not-allowed flex items-center`}
                                 >
                                     {isSubmitting ? (
                                         <>
                                             <Spinner size="sm" light={true} className="mr-2" />
-                                            Gönderiliyor...
+                                            <span>Gönderiliyor...</span>
                                         </>
                                     ) : (
                                         'Yorumu Paylaş'
                                     )}
-                                </Button>
+                                </button>
                             </div>
                         </div>
                     ) : (
