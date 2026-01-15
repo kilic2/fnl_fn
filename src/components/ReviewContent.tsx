@@ -85,12 +85,28 @@ export default function ReviewContent({ user }: ReviewContentProps) {
                 }
             }
 
-            const newComment = {
-                id: returned.id ?? `temp-${Date.now()}`,
+            // normalize tags to array of {id,name}
+            const normalizeTags = (tagsAny: any): {id: any, name: string}[] => {
+                if (!tagsAny) return [];
+                if (!Array.isArray(tagsAny)) return [];
+                return tagsAny.map((t: any, i: number) => {
+                    if (!t) return { id: i, name: String(t) };
+                    if (typeof t === 'string') return { id: i, name: t };
+                    if (typeof t === 'number') return { id: t, name: String(t) };
+                    return { id: t.id ?? i, name: t.name ?? String(t.id ?? JSON.stringify(t)) };
+                });
+            };
+
+            if (commentUser) {
+                commentUser.tags = normalizeTags(commentUser.tags);
+            }
+
+             const newComment = {
+                 id: returned.id ?? `temp-${Date.now()}`,
                 content: returned.content ?? commentText,
                 date: returned.date ? new Date(returned.date) : new Date(),
                 user: commentUser || { username: user.name, photo: user.pp, tags: [] }
-            };
+             };
 
             setReview(prev => prev ? ({
                 ...prev,
