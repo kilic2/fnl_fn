@@ -17,6 +17,7 @@ export type Profile = {
     profileTypeId: number;
     profileType?: ProfileType;
     tags?: Tag[];
+    isLoggedin:boolean;
 };
 
 export type Comment = {
