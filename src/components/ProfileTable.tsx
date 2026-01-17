@@ -99,7 +99,7 @@ const ProfileTable = () => {
       </div>
 
       <div className="bg-gray-50 dark:bg-gray-900 py-8 lg:py-16 antialiased">
-        <section className="mt-8 p-6 bg-white rounded-lg shadow-md max-w-2xl mx-auto">
+        <section className="mt-8 p-6 bg-white rounded-lg shadow-md">
           <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
             Review Ekle
           </h5>
@@ -164,7 +164,7 @@ const ProfileTable = () => {
               />
             </div>
 
-            <Button type="submit" gradientDuoTone="purpleToBlue">
+            <Button type="submit" color="dark">
               Gönder
             </Button>
           </form>
