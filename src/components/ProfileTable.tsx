@@ -18,9 +18,11 @@ import { ProfileRow } from "./ProfileRow";
 import { ProfileFormModal } from "./ProfileFormModal";
 import { api } from "../helper/api";
 import { profile } from "console";
-import { HiOutlineExclamationCircle, HiOutlineQuestionMarkCircle } from "react-icons/hi";
-
-const ProfileTable = () => {
+import {  HiOutlineQuestionMarkCircle } from "react-icons/hi";
+interface ProfileTableProps {
+  onReviewAdded: () => Promise<void> | void; 
+}
+const ProfileTable = ({ onReviewAdded }: ProfileTableProps) => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [commentText, setCommentText] = useState("");
   const [titleText, setTitleText] = useState("");
@@ -117,7 +119,8 @@ const ProfileTable = () => {
                                     <div className="flex justify-center gap-4">
                                         <Button
                                             color="green"
-                                            onClick={handleSubmitComment}
+                                            onClick={() => {{handleSubmitComment}; onReviewAdded(); setShowSure(false);}}
+                                        
                                         >
                                             Evet, eminim
                                         </Button>
@@ -136,7 +139,7 @@ const ProfileTable = () => {
 
           <hr className="h-px bg-gray-200 border-0 dark:bg-gray-700 my-4" />
 
-          <form className="flex flex-col gap-4" onSubmit={handleSubmitComment}>
+          <form className="flex flex-col gap-4" >
             <div>
               <div className="mb-2 block">
                 <Label htmlFor="title" value="Başlık Ekle" />

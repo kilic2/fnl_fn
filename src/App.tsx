@@ -71,9 +71,7 @@ function App() {
         pp: "",
         mail: ""
     });
-
-    useEffect(() => {
-        const fetchReviews = async () => {
+     const fetchReviews = async () => {
             try {
                 const response = await api.get('/review');
                 const formattedData: Review[] = response.data.map((item: any) => ({
@@ -89,6 +87,9 @@ function App() {
                 console.error(error);
             }
         };
+
+    useEffect(() => {
+       
         fetchReviews();
     }, []);
 
@@ -130,6 +131,7 @@ function App() {
                     onClick={() => {
                         setShowModal(false);
                         navigate('/');
+                        
                     }}
                     className="cursor-pointer"
                 >
@@ -216,7 +218,7 @@ function App() {
                             (user.isAdmin === 2) ? (
                                 <div className="container mx-auto mt-10 p-4">
                                     <h2 className="text-2xl font-bold mb-4">Yönetici Paneli</h2>
-                                    <ProfileTable />
+                                    <ProfileTable onReviewAdded={fetchReviews} />
                                 </div>
                             ) : (
                                 <div className="text-center mt-10">Yetkiniz yok!</div>
