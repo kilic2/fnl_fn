@@ -3,14 +3,55 @@ import {
   TableBody,
   TableHead,
   TableHeadCell,
-  TableRow,Button,Label,TextInput,Textarea,
+  TableRow,Button,Label,TextInput,Textarea,FileInput
 } from "flowbite-react";
+import { toast } from "sonner";
+
 import type { Profile } from "../types/Profile";
 import { ProfileRow } from "./ProfileRow";
 import { useEffect, useState } from "react";
 import { ProfileFormModal } from "./ProfileFormModal";
 import { api } from "../helper/api";
-import { Card, Badge } from "flowbite-react";
+    const [commentText, setCommentText] = useState("");
+   
+    const [titleText,setTitleText] = useState("");
+     const [photo, setPhoto] = useState<File | null>(null);
+
+    const handleSubmitComment = async () => {
+        if (!commentText.trim() ){
+            toast.error('Lütfen bir yorum girin');
+            return;
+        }
+        if (!titleText.trim() ){
+            toast.error('Lütfen bir başlık girin');
+            return;
+        } 
+        if (!photo){
+            toast.error('Lütfen bir fotoğraf ekleyin');
+            return; 
+        }
+          
+         
+
+
+        try {
+          
+
+            const payload = {
+                title: titleText,
+                img: photo,
+                content: commentText
+            };
+
+            const response = await api.post('/review', payload);
+            console.log('Yorum başarıyla gönderildi:', response.data);
+
+           
+            }  catch (error) {
+               toast.error('Review gönderilirken hata oluştu');
+            console.error('Yorum gönderilirken hata oluştu:', error);
+        }
+    };  
 const ProfileTable = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
 
@@ -78,6 +119,7 @@ const ProfileTable = () => {
               type="text" 
               placeholder="Örn: Harika bir deneyim!" 
               required 
+               onChange={(e) => setTitleText(e.target.value)}
             />
           </div>
 
@@ -95,7 +137,14 @@ const ProfileTable = () => {
                    Fotoğraf Seç
                 </Button>
               </label>
-              <input id="photo-upload" type="file" className="hidden" />
+             <FileInput
+                                                 id="photo"
+                                                 onChange={(e) => {
+                                                     if (e.target.files && e.target.files[0]) {
+                                                         setPhoto(e.target.files[0]);
+                                                     }
+                                                 }}
+                                             />
               
               {/* Seçilen dosya ismini göstermek için boş bir alan (opsiyonel) */}
               <span className="text-xs text-gray-500">Dosya seçilmedi</span>
@@ -111,12 +160,13 @@ const ProfileTable = () => {
               id="content" 
               placeholder="Yorumunuzu buraya yazın..." 
               required 
-              rows={4} 
+              rows={10} 
+               onChange={(e) => setCommentText(e.target.value)}
             />
           </div>
 
           {/* 6. Submit Buton */}
-          <Button type="submit" gradientDuoTone="purpleToBlue">
+          <Button type="submit" gradientDuoTone="purpleToBlue" onClick={handleSubmitComment}>
             Gönder
           </Button>
 
