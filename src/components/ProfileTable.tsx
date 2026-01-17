@@ -7,7 +7,9 @@ import {
   Button,
   Label,
   TextInput,
-  Textarea
+  Textarea,Modal,
+  ModalBody,
+  ModalHeader
 } from "flowbite-react";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
@@ -15,13 +17,15 @@ import type { Profile } from "../types/Profile";
 import { ProfileRow } from "./ProfileRow";
 import { ProfileFormModal } from "./ProfileFormModal";
 import { api } from "../helper/api";
+import { profile } from "console";
+import { HiOutlineExclamationCircle, HiOutlineQuestionMarkCircle } from "react-icons/hi";
 
 const ProfileTable = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [commentText, setCommentText] = useState("");
   const [titleText, setTitleText] = useState("");
   const [photo, setPhoto] = useState<File | null>(null);
-
+  const [showSure, setShowSure] = useState(false);
   function fetchProfiles() {
     api.get("profiles").then((res) => setProfiles(res.data));
   }
@@ -52,7 +56,7 @@ const ProfileTable = () => {
       formData.append("desc", commentText);
 
       if (photo) {
-        formData.append("img", photo);
+        formData.append("photo", photo);
       }
 
       const response = await api.post('/review', formData);
@@ -97,7 +101,33 @@ const ProfileTable = () => {
           </TableBody>
         </Table>
       </div>
-
+             <Modal
+                            show={showSure}
+                            size="md"
+                            onClose={() => setShowSure(false)}
+                            popup
+                        >
+                            <ModalHeader />
+                            <ModalBody>
+                                <div className="text-center">
+                                    <HiOutlineQuestionMarkCircle className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200" />
+                                    <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
+                                       Review eklemek istediğinize emin misiniz?
+                                    </h3>
+                                    <div className="flex justify-center gap-4">
+                                        <Button
+                                            color="green"
+                                            onClick={handleSubmitComment}
+                                        >
+                                            Evet, eminim
+                                        </Button>
+                                        <Button color="alternative" onClick={() => setShowDelete(false)}>
+                                            Hayır, iptal
+                                        </Button>
+                                    </div>
+                                </div>
+                            </ModalBody>
+                        </Modal>
       <div className="bg-gray-50 dark:bg-gray-900 py-8 lg:py-16 antialiased">
         <section className="mt-8 p-6 bg-white rounded-lg shadow-md">
           <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
@@ -164,7 +194,7 @@ const ProfileTable = () => {
               />
             </div>
 
-            <Button type="submit" color="dark">
+            <Button type="submit" color="dark" onClick={() => setShowSure(true)}>
               Gönder
             </Button>
           </form>
