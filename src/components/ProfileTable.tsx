@@ -121,7 +121,7 @@ const ProfileTable = () => {
                                         >
                                             Evet, eminim
                                         </Button>
-                                        <Button color="alternative" onClick={() => setShowDelete(false)}>
+                                        <Button color="alternative" onClick={() => setShowSure(false)}>
                                             Hayır, iptal
                                         </Button>
                                     </div>
