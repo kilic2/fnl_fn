@@ -26,10 +26,7 @@ import { api } from "../helper/api";
             toast.error('Lütfen bir başlık girin');
             return;
         } 
-        if (photo===null){
-            toast.error('Lütfen bir fotoğraf ekleyin');
-            return; 
-        }
+        
           
          
 
@@ -37,13 +34,16 @@ import { api } from "../helper/api";
         try {
           
 
-            const payload = {
-                title: titleText,
-                img: photo,
-                content: commentText
-            };
+          const formData = new FormData();
+            formData.append("title", titleText);
+          
+            formData.append("desc", commentText);
+           
 
-            const response = await api.post('/review', payload);
+            if (photo) {
+                formData.append("img", photo);
+            }
+            const response = await api.post('/review', formData);
             console.log('Yorum başarıyla gönderildi:', response.data);
 
            

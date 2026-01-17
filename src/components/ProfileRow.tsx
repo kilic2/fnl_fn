@@ -5,7 +5,7 @@ import {
     ModalHeader,
     TableCell,
     TableRow,
-    Badge,
+    
     Avatar,
 } from "flowbite-react";
 import type { Profile } from "../types/Profile";
