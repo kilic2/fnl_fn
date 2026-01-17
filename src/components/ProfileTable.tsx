@@ -3,7 +3,7 @@ import {
   TableBody,
   TableHead,
   TableHeadCell,
-  TableRow,Button,Label,TextInput,Textarea
+  TableRow,Button,Label,TextInput,Textarea,
 } from "flowbite-react";
 import type { Profile } from "../types/Profile";
 import { ProfileRow } from "./ProfileRow";
@@ -55,8 +55,8 @@ const ProfileTable = () => {
           </TableBody>
         </Table>
       </div>
-      <div>
-          <Card className="max-w-lg w-full">
+      <div className="bg-gray-50 dark:bg-gray-900 py-8 lg:py-16 antialiased">
+          <section className="mt-8 p-6 bg-white rounded-lg shadow-md">
         
         {/* 1. Header: Review Ekle */}
         <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
@@ -121,7 +121,7 @@ const ProfileTable = () => {
           </Button>
 
         </form>
-      </Card>
+      </section>
     </div>
       
     </>
