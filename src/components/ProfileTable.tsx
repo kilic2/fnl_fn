@@ -26,7 +26,7 @@ import { api } from "../helper/api";
             toast.error('Lütfen bir başlık girin');
             return;
         } 
-        if (!photo){
+        if (photo===null){
             toast.error('Lütfen bir fotoğraf ekleyin');
             return; 
         }
