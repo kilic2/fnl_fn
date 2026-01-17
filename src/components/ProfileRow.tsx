@@ -84,20 +84,17 @@ export const ProfileRow = ({ fetchProfiles, profile, handleClick }: Props) => {
                 <TableCell>{profile.email}</TableCell>
                 <TableCell>{profile.profileType?.name}</TableCell>
 
-                <TableCell>
-                    <div className="flex flex-wrap gap-2">
-                        {profile.tags && profile.tags.length > 0 ? (
-                            profile.tags.map((tag: any, index: number) => (
-                                <Badge key={index} color="info">
-                                    {tag.name}
-                                </Badge>
-                            ))
-                        ) : (
-                            <span className="text-gray-400">-</span>
-                        )}
-                    </div>
-                </TableCell>
-
+                <TableCell className="max-w-xs"> {/* Set a max-width on the cell if you want to force wrapping */}
+                    <div className="whitespace-normal break-words">
+                {profile.tags && profile.tags.length > 0 ? (
+                      <span>
+                        {profile.tags.map((tag: any) => tag.name).join(', ')}
+                    </span>
+                     ) : (
+                     <span className="text-gray-400">-</span>
+                         )}
+                 </div>
+                    </TableCell>
                 <TableCell>
                     <div className="flex gap-2">
                         <div onClick={(e) => e.stopPropagation()}>
