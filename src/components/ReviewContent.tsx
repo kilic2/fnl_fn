@@ -69,7 +69,7 @@ export default function ReviewContent({ user }: ReviewContentProps) {
             const response = await api.post('/comment', payload);
             const returned = response.data || {};
 
-           
+            // Prefer server-returned user object. If missing, fetch profile to get stored user data (photo/tags/etc).
             let commentUser = returned.user as any | undefined;
             if (!commentUser && user.id) {
                 try {
@@ -85,6 +85,7 @@ export default function ReviewContent({ user }: ReviewContentProps) {
                 }
             }
 
+            // normalize tags to array of {id,name}
             const normalizeTags = (tagsAny: any): {id: any, name: string}[] => {
                 if (!tagsAny) return [];
                 if (!Array.isArray(tagsAny)) return [];
