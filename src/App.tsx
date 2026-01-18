@@ -73,7 +73,7 @@ function App() {
 
     const [user, setUser] = useState({
         isLoggedIn: false,
-        isAdmin: 2,
+        isAdmin: null as number | null,
         id: null as number | null,
         name: "",
         pp: "",
