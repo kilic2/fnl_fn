@@ -9,39 +9,35 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
 const distPath = path.join(__dirname, 'dist');
+const indexPath = path.join(distPath, 'index.html');
 
 console.log('Starting server...');
-console.log('__dirname:', __dirname);
 console.log('distPath:', distPath);
 console.log('dist exists:', fs.existsSync(distPath));
-console.log('index.html exists:', fs.existsSync(path.join(distPath, 'index.html')));
-
-if (!fs.existsSync(distPath)) {
-  console.error('ERROR: dist folder does not exist!');
-  process.exit(1);
-}
-
-if (!fs.existsSync(path.join(distPath, 'index.html'))) {
-  console.error('ERROR: index.html not found in dist!');
-  console.log('Contents of dist:', fs.readdirSync(distPath));
-  process.exit(1);
-}
+console.log('index.html exists:', fs.existsSync(indexPath));
 
 // Serve static files
-app.use(express.static(distPath));
+app.use(express.static(distPath, {
+  maxAge: '1d',
+  etag: false
+}));
 
 // SPA fallback - serve index.html for all routes
-app.get('*', (req, res) => {
+app.use((req, res) => {
   console.log('Serving index.html for route:', req.path);
-  res.sendFile(path.join(distPath, 'index.html'));
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      console.error('Error sending file:', err);
+      res.status(500).send('Server error');
+    }
+  });
 });
 
 // Error handler
-app.use((err, req, res, next) => {
-  console.error('Error:', err);
-  res.status(500).send('Server error');
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception:', err);
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT}`);
 });
