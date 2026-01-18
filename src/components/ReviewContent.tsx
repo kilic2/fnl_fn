@@ -78,6 +78,21 @@ export default function ReviewContent({ user }: ReviewContentProps) {
         }
     };
 
+    const handleDeleteReview = async () => {
+        if (!window.confirm("Bu incelemeyi silmek istediğinize emin misiniz?")) {
+            return;
+        }
+
+        try {
+            await api.delete(`/review/${id}`);
+            toast.success("İnceleme başarıyla silindi");
+            navigate('/');
+        } catch (error: any) {
+            const msg = error.response?.data?.message || "İnceleme silinirken hata oluştu";
+            toast.error(msg);
+        }
+    };
+
     const handleSubmitComment = async () => {
         if (!commentText.trim() || !review || !user.isLoggedIn) return;
 
@@ -202,12 +217,23 @@ export default function ReviewContent({ user }: ReviewContentProps) {
                         </div>
                     </div>
 
-                    <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-6 leading-tight">
-                        {review.title}
-                    </h1>
+                    <div className="flex items-center justify-between mb-6">
+                        <h1 className="text-4xl font-bold text-gray-900 dark:text-white leading-tight">
+                            {review.title}
+                        </h1>
+                        {user.isAdmin === 2 && (
+                            <button
+                                onClick={handleDeleteReview}
+                                className="text-red-500 hover:text-red-700 transition-colors p-2"
+                                title="İncelemeyi sil"
+                            >
+                                <HiTrash className="h-6 w-6" />
+                            </button>
+                        )}
+                    </div>
 
                     <div className="prose prose-lg max-w-none text-gray-700 dark:text-gray-300 leading-relaxed">
-                        <p className="whitespace-pre-line text-justify">
+                        <p className="whitespace-pre-line text-justify text-lg">
                             {review.desc}
                         </p>
                     </div>
