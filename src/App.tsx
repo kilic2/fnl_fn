@@ -14,6 +14,7 @@ import {
 import { useState, useEffect } from "react";
 import { useNavigate, Routes, Route, Link } from "react-router-dom";
 import { ProfileFormModal } from "./components/ProfileFormModal";
+import { PasswordVerificationModal } from "./components/PasswordVerificationModal";
 import { api } from "./helper/api";
 import ReviewCard from "./components/ReviewCard";
 import type { Review } from "./types/Profile";
@@ -62,6 +63,7 @@ function App() {
     const [loginType, setLoginType] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
+    const [showPasswordVerification, setShowPasswordVerification] = useState(false);
     const [reviews, setReviews] = useState<Review[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -175,8 +177,7 @@ function App() {
                             )}
                             <DropdownItem onClick={() => {
                                 setIsEditMode(true);
-                                setLoginType(false);
-                                setShowModal(true);
+                                setShowPasswordVerification(true);
                             }}>
                                 Profili Düzenle
                             </DropdownItem>
@@ -249,6 +250,17 @@ function App() {
                     />
                 </Routes>
             </main>
+
+            <PasswordVerificationModal
+                show={showPasswordVerification}
+                setShow={setShowPasswordVerification}
+                userId={user.id || 0}
+                onVerifySuccess={() => {
+                    setShowPasswordVerification(false);
+                    setLoginType(false);
+                    setShowModal(true);
+                }}
+            />
 
             <ProfileFormModal
                 show={showModal}

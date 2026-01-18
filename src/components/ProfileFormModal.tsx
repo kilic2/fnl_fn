@@ -35,7 +35,6 @@ export const ProfileFormModal = ({ show, setShow, loginType, onLoginSuccess, isE
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [rpPassword, setRpPassword] = useState("");
-    const [currentPassword, setCurrentPassword] = useState("");
     const [selectedTags, setSelectedTags] = useState<number[]>([]);
     const [availableTags, setAvailableTags] = useState<Tag[]>([]);
     const [loadingTags, setLoadingTags] = useState(false);
@@ -81,11 +80,6 @@ export const ProfileFormModal = ({ show, setShow, loginType, onLoginSuccess, isE
     function handleSave() {
         if (isEditMode) {
             // Edit mode - update user profile
-            if (!currentPassword) {
-                toast.error("Mevcut şifrenizi girmelisiniz");
-                return;
-            }
-
             if (wantChangePassword) {
                 if (!password || !rpPassword) {
                     toast.error("Yeni şifre ve doğrulamasını girmelisiniz");
@@ -100,7 +94,6 @@ export const ProfileFormModal = ({ show, setShow, loginType, onLoginSuccess, isE
             const formData = new FormData();
             formData.append("username", username);
             formData.append("email", email);
-            formData.append("currentPassword", currentPassword);
             
             if (wantChangePassword) {
                 formData.append("password", password);
@@ -203,7 +196,6 @@ export const ProfileFormModal = ({ show, setShow, loginType, onLoginSuccess, isE
         setEmail("");
         setPassword("");
         setRpPassword("");
-        setCurrentPassword("");
         setWantChangePassword(false);
         setSelectedTags([]);
         setPhoto(null);
@@ -219,21 +211,6 @@ export const ProfileFormModal = ({ show, setShow, loginType, onLoginSuccess, isE
             </ModalHeader>
             <ModalBody className="p-6">
                 <div className="space-y-6">
-                    {isEditMode && (
-                        <div>
-                            <div className="mb-2 block">
-                                <Label htmlFor="cp">Mevcut Şifre</Label>
-                            </div>
-                            <TextInput
-                                id="cp"
-                                type="password"
-                                value={currentPassword}
-                                onChange={(e) => setCurrentPassword(e.target.value)}
-                                placeholder="Mevcut şifrenizi girin"
-                            />
-                        </div>
-                    )}
-
                     <div>
                         <div className="mb-2 block">
                             <Label htmlFor="u">Kullanıcı Adı</Label>
@@ -263,12 +240,19 @@ export const ProfileFormModal = ({ show, setShow, loginType, onLoginSuccess, isE
 
                     {isEditMode && (
                         <div>
-                            <label className="flex items-center">
+                            <label className="flex items-center cursor-pointer">
                                 <input
                                     type="checkbox"
                                     checked={wantChangePassword}
-                                    onChange={(e) => setWantChangePassword(e.target.checked)}
-                                    className="mr-2"
+                                    onChange={(e) => {
+                                        setWantChangePassword(e.target.checked);
+                                        if (!e.target.checked) {
+                                            // Clear password fields when unchecked
+                                            setPassword("");
+                                            setRpPassword("");
+                                        }
+                                    }}
+                                    className="mr-2 w-4 h-4 cursor-pointer"
                                 />
                                 <span className="text-sm">Şifreyi değiştir</span>
                             </label>
