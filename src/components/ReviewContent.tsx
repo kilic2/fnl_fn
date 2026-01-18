@@ -246,13 +246,13 @@ export default function ReviewContent({ user }: ReviewContentProps) {
                                                         • {comment.date.toLocaleDateString('tr-TR')} {comment.date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
                                                     </span>
                                                 </div>
-                                                {user.isAdmin === 1 && (
+                                                {user.isAdmin === 2 && (
                                                     <button
                                                         onClick={() => handleDeleteComment(comment.id)}
-                                                        className="text-red-500 hover:text-red-700 transition-colors p-1"
+                                                        className="text-red-500 hover:text-red-700 transition-colors p-1 ml-2"
                                                         title="Yorumu sil"
                                                     >
-                                                        <HiTrash className="h-4 w-4" />
+                                                        <HiTrash className="h-5 w-5" />
                                                     </button>
                                                 )}
                                             </div>

@@ -30,6 +30,7 @@ export const PasswordChangeModal = ({ show, setShow, onSubmit }: Props) => {
             return;
         }
 
+        toast.success("Şifre başarıyla ayarlandı");
         onSubmit(password, rpPassword);
         setPassword("");
         setRpPassword("");
