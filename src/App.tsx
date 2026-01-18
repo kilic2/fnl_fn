@@ -62,6 +62,7 @@ function App() {
     const [loginType, setLoginType] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [reviews, setReviews] = useState<Review[]>([]);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     const [user, setUser] = useState({
         isLoggedIn: false,
@@ -71,6 +72,10 @@ function App() {
         pp: "",
         mail: ""
     });
+      useEffect(() => {
+    const user = localStorage.getItem('user');
+    setIsLoggedIn(!!user);
+  }, []);
      const fetchReviews = async () => {
             try {
                 const response = await api.get('/review');
@@ -93,7 +98,7 @@ function App() {
         fetchReviews();
     }, []);
 
-    const handleLoginSuccess = (userId: number) => {
+    const handleLoginSuccess = (userId: number,e) => {
         api.get(`profiles/${userId}`)
             .then((response) => {
                 setUser({
@@ -104,6 +109,7 @@ function App() {
                     pp: response.data.photo || "https://flowbite.com/docs/images/people/profile-picture-5.jpg",
                     mail: response.data.email
                 });
+                  localStorage.setItem('user', JSON.stringify(user));
             })
             .catch((err) => {
                 console.error(err);
@@ -119,7 +125,10 @@ function App() {
             pp: "",
             mail: ""
         });
+          localStorage.removeItem('user');
         navigate('/');
+        
+ 
     };
 
     const navigate = useNavigate();
