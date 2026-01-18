@@ -1,8 +1,9 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { Button, Avatar, Card, Textarea, Spinner } from "flowbite-react";
-import { HiArrowLeft, HiClock, HiUser, HiLockClosed } from "react-icons/hi";
+import { HiArrowLeft, HiClock, HiUser, HiLockClosed, HiTrash } from "react-icons/hi";
 import { useState, useEffect } from "react";
 import { api } from "../helper/api";
+import { toast } from "sonner";
 import type { Review } from "../types/profile";
 
 interface ReviewContentProps {
@@ -11,6 +12,7 @@ interface ReviewContentProps {
         id: number | null;
         name: string | null ;
         pp: string | null;
+        isAdmin?: number;
     };
 }
 
@@ -53,6 +55,28 @@ export default function ReviewContent({ user }: ReviewContentProps) {
             fetchData();
         }
     }, [id]);
+
+    const handleDeleteComment = async (commentId: number) => {
+        if (!window.confirm("Bu yorumu silmek istediğinize emin misiniz?")) {
+            return;
+        }
+
+        try {
+            await api.delete(`/comment/${commentId}`);
+            toast.success("Yorum başarıyla silindi");
+            
+            // Update the comments list
+            if (review) {
+                setReview({
+                    ...review,
+                    comments: review.comments?.filter(c => c.id !== commentId) || []
+                });
+            }
+        } catch (error: any) {
+            const msg = error.response?.data?.message || "Yorum silinirken hata oluştu";
+            toast.error(msg);
+        }
+    };
 
     const handleSubmitComment = async () => {
         if (!commentText.trim() || !review || !user.isLoggedIn) return;
@@ -213,13 +237,24 @@ export default function ReviewContent({ user }: ReviewContentProps) {
                                         />
 
                                         <div className="flex-1 min-w-0">
-                                            <div className="flex flex-wrap items-center gap-2 mb-2">
-                                                <span className="font-bold text-gray-900 dark:text-white text-lg">
-                                                    {comment.user?.username || 'Misafir'}
-                                                </span>
-                                                <span className="text-xs text-gray-500">
-                                                    • {comment.date.toLocaleDateString('tr-TR')} {comment.date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
-                                                </span>
+                                            <div className="flex flex-wrap items-center gap-2 mb-2 justify-between">
+                                                <div className="flex flex-wrap items-center gap-2">
+                                                    <span className="font-bold text-gray-900 dark:text-white text-lg">
+                                                        {comment.user?.username || 'Misafir'}
+                                                    </span>
+                                                    <span className="text-xs text-gray-500">
+                                                        • {comment.date.toLocaleDateString('tr-TR')} {comment.date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+                                                    </span>
+                                                </div>
+                                                {user.isAdmin === 1 && (
+                                                    <button
+                                                        onClick={() => handleDeleteComment(comment.id)}
+                                                        className="text-red-500 hover:text-red-700 transition-colors p-1"
+                                                        title="Yorumu sil"
+                                                    >
+                                                        <HiTrash className="h-4 w-4" />
+                                                    </button>
+                                                )}
                                             </div>
 
                                             {comment.user?.tags && comment.user.tags.length > 0 && (

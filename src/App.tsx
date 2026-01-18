@@ -234,7 +234,7 @@ function App() {
                             </div>
                         </>
                     } />
-                    <Route path="/discussion/:id" element={<ReviewContent user={user} />} />
+                    <Route path="/discussion/:id" element={<ReviewContent user={{...user, isAdmin: user.isAdmin}} />} />
                     <Route
                         path="/admin"
                         element={
