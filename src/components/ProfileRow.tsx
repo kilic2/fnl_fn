@@ -103,6 +103,30 @@ export const ProfileRow = ({ fetchProfiles, profile, handleClick }: Props) => {
 
                         <Button
                             size="xs"
+                            color={profile.profileTypeId === 2 ? "gray" : "success"}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                if (profile.profileTypeId === 2) {
+                                    toast.info("Bu kullanıcı zaten admin");
+                                    return;
+                                }
+                                api
+                                    .patch(`/profiles/${profile.id}`, { profileTypeId: 2 })
+                                    .then(() => {
+                                        fetchProfiles();
+                                        toast.success("Kullanıcı admin yapıldı");
+                                    })
+                                    .catch((err) => {
+                                        console.error(err);
+                                        toast.error("Bir hata oluştu");
+                                    });
+                            }}
+                        >
+                            {profile.profileTypeId === 2 ? "Admin" : "Admin Yap"}
+                        </Button>
+
+                        <Button
+                            size="xs"
                             color="red"
                             onClick={(e) => {
                                 e.stopPropagation();
