@@ -7,16 +7,18 @@ import {
   Button,
   Label,
   TextInput,
-  Textarea,Modal,
+  Textarea,
+  Modal,
   ModalBody,
-  ModalHeader
+  ModalHeader,
+  Checkbox
 } from "flowbite-react";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import type { Profile } from "../types/Profile";
 import { ProfileRow } from "./ProfileRow";
 import { api } from "../helper/api";
-import {  HiOutlineQuestionMarkCircle } from "react-icons/hi";
+import { HiOutlineQuestionMarkCircle } from "react-icons/hi";
 
 const ProfileTable = ({ onReviewAdded }: ProfileTableProps) => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -24,6 +26,7 @@ const ProfileTable = ({ onReviewAdded }: ProfileTableProps) => {
   const [titleText, setTitleText] = useState("");
   const [photo, setPhoto] = useState<File | null>(null);
   const [showSure, setShowSure] = useState(false);
+
   function fetchProfiles() {
     api.get("profiles").then((res) => setProfiles(res.data));
   }
@@ -35,6 +38,19 @@ const ProfileTable = ({ onReviewAdded }: ProfileTableProps) => {
   function handleClick(profile: Profile) {
     console.log(profile);
   }
+
+  const handleAdminToggle = async (profileId: number, currentAdminStatus: number) => {
+    const newAdminStatus = currentAdminStatus === 2 ? 1 : 2;
+    
+    try {
+      await api.patch(`/profiles/${profileId}`, { profileTypeId: newAdminStatus });
+      toast.success(newAdminStatus === 2 ? 'Kullanıcı admin yapıldı' : 'Admin yetkisi kaldırıldı');
+      fetchProfiles();
+    } catch (error) {
+      toast.error('Admin durumu güncellenirken hata oluştu');
+      console.error(error);
+    }
+  };
 
   const handleSubmitComment = async () => {
     if (!commentText.trim()) {
@@ -57,7 +73,7 @@ const ProfileTable = ({ onReviewAdded }: ProfileTableProps) => {
 
       const response = await api.post('/review', formData);
       console.log('Yorum başarıyla gönderildi:', response.data);
-      toast.success('Yorum başarıyla gönderildi');
+      toast.success('Review başarıyla eklendi');
       
       setTitleText("");
       setCommentText("");
@@ -81,50 +97,77 @@ const ProfileTable = ({ onReviewAdded }: ProfileTableProps) => {
               <TableHeadCell>Fotoğraf</TableHeadCell>
               <TableHeadCell>Kullanıcı Adı</TableHeadCell>
               <TableHeadCell>Email</TableHeadCell>
-              <TableHeadCell>Profil Tipi</TableHeadCell>
+              <TableHeadCell>Admin</TableHeadCell>
               <TableHeadCell>Tagler</TableHeadCell>
               <TableHeadCell>İşlemler</TableHeadCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {profiles.map((p) => (
-              <ProfileRow
-                key={p.id}
-                fetchProfiles={fetchProfiles}
-                profile={p}
-                handleClick={handleClick}
-              />
+              <TableRow key={p.id} className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                  {p.id}
+                </TableCell>
+                <TableCell>
+                  <img src={p.photo || "https://flowbite.com/docs/images/people/profile-picture-5.jpg"} alt={p.username} className="w-10 h-10 rounded-full" />
+                </TableCell>
+                <TableCell>{p.username}</TableCell>
+                <TableCell>{p.email}</TableCell>
+                <TableCell>
+                  <Checkbox
+                    checked={p.profileTypeId === 2}
+                    onChange={() => handleAdminToggle(p.id, p.profileTypeId)}
+                  />
+                </TableCell>
+                <TableCell>
+                  <div className="flex gap-1 flex-wrap">
+                    {p.tags?.map((tag: any) => (
+                      <span key={tag.id} className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
+                        {tag.name}
+                      </span>
+                    ))}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <ProfileRow
+                    key={p.id}
+                    fetchProfiles={fetchProfiles}
+                    profile={p}
+                    handleClick={handleClick}
+                  />
+                </TableCell>
+              </TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
-             <Modal
-                            show={showSure}
-                            size="md"
-                            onClose={() => setShowSure(false)}
-                            popup
-                        >
-                            <ModalHeader />
-                            <ModalBody>
-                                <div className="text-center">
-                                    <HiOutlineQuestionMarkCircle className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200" />
-                                    <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
-                                       Review eklemek istediğinize emin misiniz?
-                                    </h3>
-                                    <div className="flex justify-center gap-4">
-                                        <Button
-                                            color="green"
-                                            onClick={handleSubmitComment}
-                                        >
-                                            Evet, eminim
-                                        </Button>
-                                        <Button color="alternative" onClick={() => setShowSure(false)}>
-                                            Hayır, iptal
-                                        </Button>
-                                    </div>
-                                </div>
-                            </ModalBody>
-                        </Modal>
+      <Modal
+        show={showSure}
+        size="md"
+        onClose={() => setShowSure(false)}
+        popup
+      >
+        <ModalHeader />
+        <ModalBody>
+          <div className="text-center">
+            <HiOutlineQuestionMarkCircle className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200" />
+            <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
+              Review eklemek istediğinize emin misiniz?
+            </h3>
+            <div className="flex justify-center gap-4">
+              <Button
+                color="green"
+                onClick={handleSubmitComment}
+              >
+                Evet, eminim
+              </Button>
+              <Button color="alternative" onClick={() => setShowSure(false)}>
+                Hayır, iptal
+              </Button>
+            </div>
+          </div>
+        </ModalBody>
+      </Modal>
       <div className="bg-gray-50 dark:bg-gray-900 py-8 lg:py-16 antialiased">
         <section className="mt-8 p-6 bg-white rounded-lg shadow-md">
           <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
