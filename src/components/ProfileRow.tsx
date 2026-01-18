@@ -31,9 +31,16 @@ export const ProfileRow = ({ fetchProfiles, profile, handleClick, currentUserId 
         e.stopPropagation();
         const newAdminStatus = isAdmin ? 1 : 2;
         
+        console.log('Sending profileTypeId:', newAdminStatus);
+        console.log('Current profile:', profile);
+        
         try {
-            const response = await api.patch(`/profiles/${profile.id}`, { profileTypeId: newAdminStatus });
+            const payload = { profileTypeId: newAdminStatus };
+            console.log('Payload:', payload);
+            
+            const response = await api.patch(`/profiles/${profile.id}`, payload);
             console.log('Patch response:', response.data);
+            console.log('Response profileTypeId:', response.data.profileTypeId);
             
             if (response.status === 200 || response.status === 201) {
                 setIsAdmin(newAdminStatus === 2);
