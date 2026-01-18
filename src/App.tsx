@@ -14,6 +14,7 @@ import {
 import { useState, useEffect } from "react";
 import { useNavigate, Routes, Route, Link } from "react-router-dom";
 import { ProfileFormModal } from "./components/ProfileFormModal";
+import { LoginRegisterModal } from "./components/LoginRegisterModal";
 import { PasswordVerificationModal } from "./components/PasswordVerificationModal";
 import { PasswordChangeModal } from "./components/PasswordChangeModal";
 import { api } from "./helper/api";
@@ -62,7 +63,7 @@ function AdminPanel() {
 
 function App() {
     const [loginType, setLoginType] = useState(false);
-    const [showModal, setShowModal] = useState(false);
+    const [showLoginRegisterModal, setShowLoginRegisterModal] = useState(false);
     const [showPasswordVerification, setShowPasswordVerification] = useState(false);
     const [passwordVerificationFlow, setPasswordVerificationFlow] = useState<'profile' | 'password'>('profile');
     const [showProfileFormModal, setShowProfileFormModal] = useState(false);
@@ -196,13 +197,13 @@ function App() {
                     ) : (
                         <div className="flex gap-4">
                             <button
-                                onClick={() => { setLoginType(true); setShowModal(true); }}
+                                onClick={() => { setLoginType(true); setShowLoginRegisterModal(true); }}
                                 className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                             >
                                 Giriş Yap
                             </button>
                             <button
-                                onClick={() => { setLoginType(false); setShowModal(true); }}
+                                onClick={() => { setLoginType(false); setShowLoginRegisterModal(true); }}
                                 className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                             >
                                 Kayıt Ol
@@ -259,6 +260,13 @@ function App() {
                     />
                 </Routes>
             </main>
+
+            <LoginRegisterModal
+                show={showLoginRegisterModal}
+                setShow={setShowLoginRegisterModal}
+                loginType={loginType}
+                onLoginSuccess={handleLoginSuccess}
+            />
 
             <PasswordVerificationModal
                 show={showPasswordVerification}
