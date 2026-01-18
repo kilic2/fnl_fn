@@ -61,6 +61,7 @@ function AdminPanel() {
 function App() {
     const [loginType, setLoginType] = useState(false);
     const [showModal, setShowModal] = useState(false);
+    const [isEditMode, setIsEditMode] = useState(false);
     const [reviews, setReviews] = useState<Review[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -172,6 +173,13 @@ function App() {
                                     Admin Paneli
                                 </DropdownItem>
                             )}
+                            <DropdownItem onClick={() => {
+                                setIsEditMode(true);
+                                setLoginType(false);
+                                setShowModal(true);
+                            }}>
+                                Profili Düzenle
+                            </DropdownItem>
                             <DropdownDivider />
                             <DropdownItem onClick={handleLogout}>Çıkış yap</DropdownItem>
                         </Dropdown>
@@ -244,9 +252,19 @@ function App() {
 
             <ProfileFormModal
                 show={showModal}
-                setShow={setShowModal}
+                setShow={(show) => {
+                    setShowModal(show);
+                    if (!show) setIsEditMode(false);
+                }}
                 loginType={loginType}
                 onLoginSuccess={handleLoginSuccess}
+                isEditMode={isEditMode}
+                userData={user.isLoggedIn ? {
+                    id: user.id || 0,
+                    username: user.name,
+                    email: user.mail,
+                    pp: user.pp
+                } : undefined}
             />
         </>
     );

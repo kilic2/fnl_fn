@@ -16,6 +16,13 @@ interface Props {
     setShow: (show: boolean) => void;
     loginType: boolean;
     onLoginSuccess: (userId: number) => void;
+    isEditMode?: boolean;
+    userData?: {
+        id: number;
+        username: string;
+        email: string;
+        pp: string;
+    };
 }
 
 interface Tag {
@@ -23,21 +30,32 @@ interface Tag {
     name: string;
 }
 
-export const ProfileFormModal = ({ show, setShow, loginType, onLoginSuccess }: Props) => {
+export const ProfileFormModal = ({ show, setShow, loginType, onLoginSuccess, isEditMode = false, userData }: Props) => {
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [rpPassword, setRpPassword] = useState("");
+    const [currentPassword, setCurrentPassword] = useState("");
     const [selectedTags, setSelectedTags] = useState<number[]>([]);
     const [availableTags, setAvailableTags] = useState<Tag[]>([]);
     const [loadingTags, setLoadingTags] = useState(false);
     const [photo, setPhoto] = useState<File | null>(null);
+    const [wantChangePassword, setWantChangePassword] = useState(false);
 
     useEffect(() => {
-        if (show && !loginType) {
+        if (isEditMode && userData && show) {
+            // Pre-fill with user data in edit mode
+            setUsername(userData.username);
+            setEmail(userData.email);
+            setWantChangePassword(false);
+            setPassword("");
+            setRpPassword("");
+            setCurrentPassword("");
+            fetchTags();
+        } else if (show && !loginType && !isEditMode) {
             fetchTags();
         }
-    }, [show, loginType]);
+    }, [show, loginType, isEditMode, userData]);
 
     const fetchTags = async () => {
         setLoadingTags(true);
@@ -61,7 +79,54 @@ export const ProfileFormModal = ({ show, setShow, loginType, onLoginSuccess }: P
     };
 
     function handleSave() {
-        if (loginType) {
+        if (isEditMode) {
+            // Edit mode - update user profile
+            if (!currentPassword) {
+                toast.error("Mevcut şifrenizi girmelisiniz");
+                return;
+            }
+
+            if (wantChangePassword) {
+                if (!password || !rpPassword) {
+                    toast.error("Yeni şifre ve doğrulamasını girmelisiniz");
+                    return;
+                }
+                if (password !== rpPassword) {
+                    toast.error("Şifreler eşleşmiyor");
+                    return;
+                }
+            }
+
+            const formData = new FormData();
+            formData.append("username", username);
+            formData.append("email", email);
+            formData.append("currentPassword", currentPassword);
+            
+            if (wantChangePassword) {
+                formData.append("password", password);
+            }
+
+            if (photo) {
+                formData.append("photo", photo);
+            }
+
+            api.patch(`/profiles/${userData?.id}`, formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            })
+                .then(() => {
+                    toast.success("Profil başarıyla güncellendi");
+                    resetForm();
+                    setShow(false);
+                    // Refresh user data or redirect
+                    window.location.reload();
+                })
+                .catch((err) => {
+                    const msg = err.response?.data?.message || "Güncelleme başarısız";
+                    toast.error(Array.isArray(msg) ? msg[0] : msg);
+                });
+        } else if (loginType) {
             if (!username || !password) {
                 toast.error("Kullanıcı adı ve şifre gerekli");
                 return;
@@ -138,6 +203,8 @@ export const ProfileFormModal = ({ show, setShow, loginType, onLoginSuccess }: P
         setEmail("");
         setPassword("");
         setRpPassword("");
+        setCurrentPassword("");
+        setWantChangePassword(false);
         setSelectedTags([]);
         setPhoto(null);
     };
@@ -148,10 +215,25 @@ export const ProfileFormModal = ({ show, setShow, loginType, onLoginSuccess }: P
             setShow(false);
         }} popup>
             <ModalHeader className="border-b border-gray-200 px-6 py-4">
-                <span>{loginType ? "Giriş Yap" : "Kaydol"}</span>
+                <span>{isEditMode ? "Profili Düzenle" : (loginType ? "Giriş Yap" : "Kaydol")}</span>
             </ModalHeader>
             <ModalBody className="p-6">
                 <div className="space-y-6">
+                    {isEditMode && (
+                        <div>
+                            <div className="mb-2 block">
+                                <Label htmlFor="cp">Mevcut Şifre</Label>
+                            </div>
+                            <TextInput
+                                id="cp"
+                                type="password"
+                                value={currentPassword}
+                                onChange={(e) => setCurrentPassword(e.target.value)}
+                                placeholder="Mevcut şifrenizi girin"
+                            />
+                        </div>
+                    )}
+
                     <div>
                         <div className="mb-2 block">
                             <Label htmlFor="u">Kullanıcı Adı</Label>
@@ -179,25 +261,40 @@ export const ProfileFormModal = ({ show, setShow, loginType, onLoginSuccess }: P
                         </div>
                     )}
 
-                    <div>
-                        <div className="mb-2 block">
-                            <Label htmlFor="p">Şifre</Label>
+                    {isEditMode && (
+                        <div>
+                            <label className="flex items-center">
+                                <input
+                                    type="checkbox"
+                                    checked={wantChangePassword}
+                                    onChange={(e) => setWantChangePassword(e.target.checked)}
+                                    className="mr-2"
+                                />
+                                <span className="text-sm">Şifreyi değiştir</span>
+                            </label>
                         </div>
-                        <TextInput
-                            id="p"
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Şifre"
-                        />
-                    </div>
+                    )}
 
-                    {!loginType && (
-                        <>
-                            <div>
-                                <div className="mb-2 block">
-                                    <Label htmlFor="rp">Şifreyi Tekrarla</Label>
-                                </div>
+                    {(!loginType || (isEditMode && wantChangePassword)) && (
+                        <div>
+                            <div className="mb-2 block">
+                                <Label htmlFor="p">{isEditMode ? "Yeni Şifre" : "Şifre"}</Label>
+                            </div>
+                            <TextInput
+                                id="p"
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="Şifre"
+                            />
+                        </div>
+                    )}
+
+                    {(!loginType || (isEditMode && wantChangePassword)) && (
+                        <div>
+                            <div className="mb-2 block">
+                                <Label htmlFor="rp">Şifreyi Tekrarla</Label>
+                            </div>
                                 <TextInput
                                     id="rp"
                                     type="password"
@@ -263,7 +360,7 @@ export const ProfileFormModal = ({ show, setShow, loginType, onLoginSuccess }: P
 
                     <div className="w-full pt-4">
                         <Button onClick={handleSave} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded">
-                            {loginType ? "Giriş Yap" : "Kaydol"}
+                            {isEditMode ? "Güncelle" : (loginType ? "Giriş Yap" : "Kaydol")}
                         </Button>
                     </div>
                 </div>
