@@ -20,7 +20,7 @@ import { ProfileRow } from "./ProfileRow";
 import { api } from "../helper/api";
 import { HiOutlineQuestionMarkCircle } from "react-icons/hi";
 
-const ProfileTable = ({ onReviewAdded }: ProfileTableProps) => {
+const ProfileTable = ({ onReviewAdded, user }: ProfileTableProps) => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [commentText, setCommentText] = useState("");
   const [titleText, setTitleText] = useState("");
@@ -85,6 +85,7 @@ const ProfileTable = ({ onReviewAdded }: ProfileTableProps) => {
               <TableHeadCell>Kullanıcı Adı</TableHeadCell>
               <TableHeadCell>Email</TableHeadCell>
               <TableHeadCell>Profil Tipi</TableHeadCell>
+              <TableHeadCell>Admin</TableHeadCell>
               <TableHeadCell>Tagler</TableHeadCell>
               <TableHeadCell>İşlemler</TableHeadCell>
             </TableRow>
@@ -96,6 +97,7 @@ const ProfileTable = ({ onReviewAdded }: ProfileTableProps) => {
                 fetchProfiles={fetchProfiles}
                 profile={p}
                 handleClick={handleClick}
+                currentUserId={user?.id}
               />
             ))}
           </TableBody>

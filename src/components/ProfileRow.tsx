@@ -20,18 +20,21 @@ interface Props {
     fetchProfiles: () => void;
     profile: Profile;
     handleClick: (profile: Profile) => void;
+    currentUserId?: number | null;
 }
 
-export const ProfileRow = ({ fetchProfiles, profile, handleClick }: Props) => {
+export const ProfileRow = ({ fetchProfiles, profile, handleClick, currentUserId }: Props) => {
     const [showDelete, setShowDelete] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(profile.profileTypeId === 2);
 
     const handleAdminToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
         e.stopPropagation();
-        const newAdminStatus = profile.profileTypeId === 2 ? 1 : 2;
+        const newAdminStatus = isAdmin ? 1 : 2;
         
         api
             .patch(`/profiles/${profile.id}`, { profileTypeId: newAdminStatus })
             .then(() => {
+                setIsAdmin(!isAdmin);
                 fetchProfiles();
                 toast.success(newAdminStatus === 2 ? 'Kullanıcı admin yapıldı' : 'Admin yetkisi kaldırıldı');
             })
@@ -98,13 +101,18 @@ export const ProfileRow = ({ fetchProfiles, profile, handleClick }: Props) => {
                     {profile.username}
                 </TableCell>
                 <TableCell>{profile.email}</TableCell>
+                <TableCell>{profile.profileType?.name || (profile.profileTypeId === 2 ? 'Admin' : 'User')}</TableCell>
                 <TableCell>
-                    <div onClick={(e) => e.stopPropagation()}>
-                        <Checkbox
-                            checked={profile.profileTypeId === 2}
-                            onChange={handleAdminToggle}
-                        />
-                    </div>
+                    {currentUserId !== profile.id ? (
+                        <div onClick={(e) => e.stopPropagation()}>
+                            <Checkbox
+                                checked={isAdmin}
+                                onChange={handleAdminToggle}
+                            />
+                        </div>
+                    ) : (
+                        <span className="text-gray-400">-</span>
+                    )}
                 </TableCell>
 
                 <TableCell className="max-w-xs">
