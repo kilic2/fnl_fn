@@ -49,7 +49,6 @@ export const ProfileFormModal = ({ show, setShow, loginType, onLoginSuccess, isE
             setWantChangePassword(false);
             setPassword("");
             setRpPassword("");
-            setCurrentPassword("");
             fetchTags();
         } else if (show && !loginType && !isEditMode) {
             fetchTags();
