@@ -62,6 +62,7 @@ function App() {
     const [loginType, setLoginType] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [reviews, setReviews] = useState<Review[]>([]);
+    const [loading, setLoading] = useState(true);
 
     const [user, setUser] = useState({
         isLoggedIn: false,
@@ -77,6 +78,7 @@ function App() {
         if (savedUser) {
             setUser(JSON.parse(savedUser));
         }
+        setLoading(false);
     }, []);
 
     const fetchReviews = async () => {
@@ -133,6 +135,10 @@ function App() {
     };
 
     const navigate = useNavigate();
+
+    if (loading) {
+        return <div className="flex items-center justify-center min-h-screen">Yükleniyor...</div>;
+    }
 
     return (
         <>
