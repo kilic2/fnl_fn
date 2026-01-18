@@ -7,19 +7,22 @@ import {
     TextInput,
 } from "flowbite-react";
 import { useState } from "react";
+import { api } from "../helper/api";
 import { toast } from "sonner";
 
 interface Props {
     show: boolean;
     setShow: (show: boolean) => void;
-    onSubmit: (password: string, rpPassword: string) => void;
+    userId: number;
+    onLogout?: () => void;
 }
 
-export const PasswordChangeModal = ({ show, setShow, onSubmit }: Props) => {
+export const PasswordChangeModal = ({ show, setShow, userId, onLogout }: Props) => {
     const [password, setPassword] = useState("");
     const [rpPassword, setRpPassword] = useState("");
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!password || !rpPassword) {
             toast.error("Tüm alanlar gerekli");
             return;
@@ -30,11 +33,25 @@ export const PasswordChangeModal = ({ show, setShow, onSubmit }: Props) => {
             return;
         }
 
-        toast.success("Şifre başarıyla ayarlandı");
-        onSubmit(password, rpPassword);
-        setPassword("");
-        setRpPassword("");
-        setShow(false);
+        setLoading(true);
+        try {
+            await api.patch(`/profiles/${userId}`, { password });
+            toast.success("Şifre başarıyla değiştirildi. Lütfen yeniden giriş yapınız.");
+            setPassword("");
+            setRpPassword("");
+            setShow(false);
+            
+            // Logout after password change
+            localStorage.removeItem('user');
+            if (onLogout) {
+                onLogout();
+            }
+        } catch (error: any) {
+            const msg = error.response?.data?.message || "Şifre değiştirilemedi";
+            toast.error(Array.isArray(msg) ? msg[0] : msg);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -76,9 +93,10 @@ export const PasswordChangeModal = ({ show, setShow, onSubmit }: Props) => {
                     <div className="flex gap-2">
                         <Button
                             onClick={handleSubmit}
-                            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2"
+                            disabled={loading}
+                            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            Onayla
+                            {loading ? "Kaydediliyor..." : "Onayla"}
                         </Button>
                         <Button
                             onClick={() => {

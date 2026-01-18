@@ -84,10 +84,12 @@ export default function ReviewContent({ user }: ReviewContentProps) {
         }
 
         try {
+            console.log(`Attempting to delete review with ID: ${id}`);
             await api.delete(`/review/${id}`);
             toast.success("İnceleme başarıyla silindi");
             navigate('/');
         } catch (error: any) {
+            console.error("Delete review error:", error.response?.status, error.response?.data);
             const msg = error.response?.data?.message || "İnceleme silinirken hata oluştu";
             toast.error(msg);
         }

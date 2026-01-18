@@ -131,7 +131,7 @@ function App() {
     const handleLogout = () => {
         setUser({
             isLoggedIn: false,
-            isAdmin: 2,
+            isAdmin: null as number | null,
             id: null,
             name: "",
             pp: "",
@@ -296,15 +296,14 @@ function App() {
                     email: '',
                     pp: ''
                 }}
+                onLogout={handleLogout}
             />
 
             <PasswordChangeModal
                 show={showPasswordChangeModal}
                 setShow={setShowPasswordChangeModal}
-                onSubmit={(password, rpPassword) => {
-                    // Handle password change submission here
-                    setShowPasswordChangeModal(false);
-                }}
+                userId={user.id || 0}
+                onLogout={handleLogout}
             />
         </>
     );

@@ -20,9 +20,10 @@ interface Props {
         email: string;
         pp: string;
     };
+    onLogout?: () => void;
 }
 
-export const ProfileFormModal = ({ show, setShow, userData }: Props) => {
+export const ProfileFormModal = ({ show, setShow, userData, onLogout }: Props) => {
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [photo, setPhoto] = useState<File | null>(null);
@@ -56,10 +57,15 @@ export const ProfileFormModal = ({ show, setShow, userData }: Props) => {
             },
         })
             .then(() => {
-                toast.success("Profil başarıyla güncellendi");
+                toast.success("Profil başarıyla güncellendi. Lütfen yeniden giriş yapınız.");
                 resetForm();
                 setShow(false);
-                window.location.reload();
+                
+                // Logout after profile update
+                localStorage.removeItem('user');
+                if (onLogout) {
+                    onLogout();
+                }
             })
             .catch((err) => {
                 const msg = err.response?.data?.message || "Güncelleme başarısız";
