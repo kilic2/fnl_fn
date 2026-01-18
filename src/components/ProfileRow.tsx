@@ -5,8 +5,8 @@ import {
     ModalHeader,
     TableCell,
     TableRow,
-    
     Avatar,
+    Checkbox,
 } from "flowbite-react";
 import type { Profile } from "../types/Profile";
 import { ProfileFormModal } from "./ProfileFormModal";
@@ -24,6 +24,22 @@ interface Props {
 
 export const ProfileRow = ({ fetchProfiles, profile, handleClick }: Props) => {
     const [showDelete, setShowDelete] = useState(false);
+
+    const handleAdminToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+        e.stopPropagation();
+        const newAdminStatus = profile.profileTypeId === 2 ? 1 : 2;
+        
+        api
+            .patch(`/profiles/${profile.id}`, { profileTypeId: newAdminStatus })
+            .then(() => {
+                fetchProfiles();
+                toast.success(newAdminStatus === 2 ? 'Kullanıcı admin yapıldı' : 'Admin yetkisi kaldırıldı');
+            })
+            .catch((err) => {
+                console.error(err);
+                toast.error('Admin durumu güncellenirken hata oluştu');
+            });
+    };
 
     return (
         <>
@@ -82,48 +98,31 @@ export const ProfileRow = ({ fetchProfiles, profile, handleClick }: Props) => {
                     {profile.username}
                 </TableCell>
                 <TableCell>{profile.email}</TableCell>
-                <TableCell>{profile.profileType?.name}</TableCell>
+                <TableCell>
+                    <div onClick={(e) => e.stopPropagation()}>
+                        <Checkbox
+                            checked={profile.profileTypeId === 2}
+                            onChange={handleAdminToggle}
+                        />
+                    </div>
+                </TableCell>
 
-                <TableCell className="max-w-xs"> {/* Set a max-width on the cell if you want to force wrapping */}
+                <TableCell className="max-w-xs">
                     <div className="whitespace-normal break-words">
-                {profile.tags && profile.tags.length > 0 ? (
-                      <span>
-                        {profile.tags.map((tag: any) => tag.name).join(', ')}
-                    </span>
-                     ) : (
-                     <span className="text-gray-400">-</span>
-                         )}
-                 </div>
+                        {profile.tags && profile.tags.length > 0 ? (
+                            <span>
+                                {profile.tags.map((tag: any) => tag.name).join(', ')}
+                            </span>
+                        ) : (
+                            <span className="text-gray-400">-</span>
+                        )}
+                    </div>
                 </TableCell>
                 <TableCell>
                     <div className="flex gap-2">
                         <div onClick={(e) => e.stopPropagation()}>
                             <ProfileFormModal fetchProfiles={fetchProfiles} profile={profile} />
                         </div>
-
-                        <Button
-                            size="xs"
-                            color={profile.profileTypeId === 2 ? "gray" : "success"}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                if (profile.profileTypeId === 2) {
-                                    toast.info("Bu kullanıcı zaten admin");
-                                    return;
-                                }
-                                api
-                                    .patch(`/profiles/${profile.id}`, { profileTypeId: 2 })
-                                    .then(() => {
-                                        fetchProfiles();
-                                        toast.success("Kullanıcı admin yapıldı");
-                                    })
-                                    .catch((err) => {
-                                        console.error(err);
-                                        toast.error("Bir hata oluştu");
-                                    });
-                            }}
-                        >
-                            {profile.profileTypeId === 2 ? "Admin" : "Admin Yap"}
-                        </Button>
 
                         <Button
                             size="xs"

@@ -4,14 +4,14 @@ import {
   TableHead,
   TableHeadCell,
   TableRow,
+  TableCell,
   Button,
   Label,
   TextInput,
   Textarea,
   Modal,
   ModalBody,
-  ModalHeader,
-  Checkbox
+  ModalHeader
 } from "flowbite-react";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
@@ -38,19 +38,6 @@ const ProfileTable = ({ onReviewAdded }: ProfileTableProps) => {
   function handleClick(profile: Profile) {
     console.log(profile);
   }
-
-  const handleAdminToggle = async (profileId: number, currentAdminStatus: number) => {
-    const newAdminStatus = currentAdminStatus === 2 ? 1 : 2;
-    
-    try {
-      await api.patch(`/profiles/${profileId}`, { profileTypeId: newAdminStatus });
-      toast.success(newAdminStatus === 2 ? 'Kullanıcı admin yapıldı' : 'Admin yetkisi kaldırıldı');
-      fetchProfiles();
-    } catch (error) {
-      toast.error('Admin durumu güncellenirken hata oluştu');
-      console.error(error);
-    }
-  };
 
   const handleSubmitComment = async () => {
     if (!commentText.trim()) {
@@ -97,46 +84,19 @@ const ProfileTable = ({ onReviewAdded }: ProfileTableProps) => {
               <TableHeadCell>Fotoğraf</TableHeadCell>
               <TableHeadCell>Kullanıcı Adı</TableHeadCell>
               <TableHeadCell>Email</TableHeadCell>
-              <TableHeadCell>Admin</TableHeadCell>
+              <TableHeadCell>Profil Tipi</TableHeadCell>
               <TableHeadCell>Tagler</TableHeadCell>
               <TableHeadCell>İşlemler</TableHeadCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {profiles.map((p) => (
-              <TableRow key={p.id} className="bg-white dark:border-gray-700 dark:bg-gray-800">
-                <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                  {p.id}
-                </TableCell>
-                <TableCell>
-                  <img src={p.photo || "https://flowbite.com/docs/images/people/profile-picture-5.jpg"} alt={p.username} className="w-10 h-10 rounded-full" />
-                </TableCell>
-                <TableCell>{p.username}</TableCell>
-                <TableCell>{p.email}</TableCell>
-                <TableCell>
-                  <Checkbox
-                    checked={p.profileTypeId === 2}
-                    onChange={() => handleAdminToggle(p.id, p.profileTypeId)}
-                  />
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-1 flex-wrap">
-                    {p.tags?.map((tag: any) => (
-                      <span key={tag.id} className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
-                        {tag.name}
-                      </span>
-                    ))}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <ProfileRow
-                    key={p.id}
-                    fetchProfiles={fetchProfiles}
-                    profile={p}
-                    handleClick={handleClick}
-                  />
-                </TableCell>
-              </TableRow>
+              <ProfileRow
+                key={p.id}
+                fetchProfiles={fetchProfiles}
+                profile={p}
+                handleClick={handleClick}
+              />
             ))}
           </TableBody>
         </Table>
