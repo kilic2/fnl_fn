@@ -10,15 +10,11 @@
 import { useState, useEffect } from "react";
 import { api } from "../helper/api";
 import { toast } from "sonner";
-import { PasswordChangeModal } from "./PasswordChangeModal";
 
 interface Props {
     show: boolean;
     setShow: (show: boolean) => void;
-    loginType: boolean;
-    onLoginSuccess: (userId: number) => void;
-    isEditMode?: boolean;
-    userData?: {
+    userData: {
         id: number;
         username: string;
         email: string;
@@ -26,176 +22,64 @@ interface Props {
     };
 }
 
-interface Tag {
-    id: number;
-    name: string;
-}
-
-export const ProfileFormModal = ({ show, setShow, loginType, onLoginSuccess, isEditMode = false, userData }: Props) => {
+export const ProfileFormModal = ({ show, setShow, userData }: Props) => {
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [rpPassword, setRpPassword] = useState("");
-    const [selectedTags, setSelectedTags] = useState<number[]>([]);
-    const [availableTags, setAvailableTags] = useState<Tag[]>([]);
-    const [loadingTags, setLoadingTags] = useState(false);
     const [photo, setPhoto] = useState<File | null>(null);
-    const [showPasswordChangeModal, setShowPasswordChangeModal] = useState(false);
 
     useEffect(() => {
-        if (isEditMode && userData && show) {
-            // Pre-fill with user data in edit mode
+        if (userData && show) {
+            // Pre-fill with user data
             setUsername(userData.username);
             setEmail(userData.email);
-            setPassword("");
-            setRpPassword("");
-            fetchTags();
-        } else if (show && !loginType && !isEditMode) {
-            fetchTags();
+            setPhoto(null);
         }
-    }, [show, loginType, isEditMode, userData]);
-
-    const fetchTags = async () => {
-        setLoadingTags(true);
-        try {
-            const response = await api.get('/tag');
-            setAvailableTags(response.data);
-        } catch (error) {
-            console.error(error);
-            toast.error('İlgi alanları yüklenemedi');
-        } finally {
-            setLoadingTags(false);
-        }
-    };
-
-    const toggleTag = (tagId: number) => {
-        setSelectedTags(prev =>
-            prev.includes(tagId)
-                ? prev.filter(id => id !== tagId)
-                : [...prev, tagId]
-        );
-    };
+    }, [show, userData]);
 
     function handleSave() {
-        if (isEditMode) {
-            // Edit mode - update user profile
-            const formData = new FormData();
-            formData.append("username", username);
-            formData.append("email", email);
-            
-            if (password) {
-                formData.append("password", password);
-            }
-
-            if (photo) {
-                formData.append("photo", photo);
-            }
-
-            api.patch(`/profiles/${userData?.id}`, formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-            })
-                .then(() => {
-                    toast.success("Profil başarıyla güncellendi");
-                    resetForm();
-                    setShow(false);
-                    // Refresh user data or redirect
-                    window.location.reload();
-                })
-                .catch((err) => {
-                    const msg = err.response?.data?.message || "Güncelleme başarısız";
-                    toast.error(Array.isArray(msg) ? msg[0] : msg);
-                });
-        } else if (loginType) {
-            if (!username || !password) {
-                toast.error("Kullanıcı adı ve şifre gerekli");
-                return;
-            }
-
-            api.get("/profiles")
-                .then((response) => {
-                    const users = response.data;
-                    const foundUser = users.find((u: any) => u.username === username && u.password === password);
-
-                    if (foundUser) {
-                        toast.success("Giriş başarılı");
-                        onLoginSuccess(foundUser.id);
-                        resetForm();
-                        setShow(false);
-                    } else {
-                        toast.error("Kullanıcı adı veya şifre hatalı");
-                    }
-                })
-                .catch((err) => {
-                    toast.error("Giriş işlemi başarısız");
-                });
-        } else {
-            if (!username || !email || !password) {
-                toast.error("Tüm alanlar gerekli");
-                return;
-            }
-
-            if (password !== rpPassword) {
-                toast.error("Şifreler eşleşmiyor");
-                return;
-            }
-
-            if (selectedTags.length === 0) {
-                toast.error("En az bir ilgi alanı seçmelisiniz");
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append("username", username);
-            formData.append("email", email);
-            formData.append("password", password);
-            formData.append("rpPassword", rpPassword);
-            formData.append("profileTypeId", "1");
-
-            if (photo) {
-                formData.append("photo", photo);
-            }
-
-            selectedTags.forEach(tagId => {
-                formData.append("tagIds", tagId.toString());
-            });
-
-            api.post("/profiles", formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-            })
-                .then((response) => {
-                    toast.success("Kaydol başarılı");
-                    onLoginSuccess(response.data.id);
-                    resetForm();
-                    setShow(false);
-                })
-                .catch((err) => {
-                    const msg = err.response?.data?.message || "Kaydol başarısız";
-                    toast.error(Array.isArray(msg) ? msg[0] : msg);
-                });
+        if (!username || !email) {
+            toast.error("Kullanıcı adı ve email gerekli");
+            return;
         }
+
+        const formData = new FormData();
+        formData.append("username", username);
+        formData.append("email", email);
+
+        if (photo) {
+            formData.append("photo", photo);
+        }
+
+        api.patch(`/profiles/${userData.id}`, formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        })
+            .then(() => {
+                toast.success("Profil başarıyla güncellendi");
+                resetForm();
+                setShow(false);
+                window.location.reload();
+            })
+            .catch((err) => {
+                const msg = err.response?.data?.message || "Güncelleme başarısız";
+                toast.error(Array.isArray(msg) ? msg[0] : msg);
+            });
     }
 
     const resetForm = () => {
         setUsername("");
         setEmail("");
-        setPassword("");
-        setRpPassword("");
-        setSelectedTags([]);
         setPhoto(null);
     };
 
     return (
-        <>
-        <Modal show={show} size="lg" onClose={() => {
+        <Modal show={show} size="md" onClose={() => {
             resetForm();
             setShow(false);
         }} popup>
             <ModalHeader className="border-b border-gray-200 px-6 py-4">
-                <span>{isEditMode ? "Profili Düzenle" : (loginType ? "Giriş Yap" : "Kaydol")}</span>
+                <span>Profili Düzenle</span>
             </ModalHeader>
             <ModalBody className="p-6">
                 <div className="space-y-6">
@@ -211,134 +95,41 @@ export const ProfileFormModal = ({ show, setShow, loginType, onLoginSuccess, isE
                         />
                     </div>
 
-                    {!loginType && (
-                        <div>
-                            <div className="mb-2 block">
-                                <Label htmlFor="e">Email</Label>
-                            </div>
-                            <TextInput
-                                id="e"
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="örnek@email.com"
-                            />
+                    <div>
+                        <div className="mb-2 block">
+                            <Label htmlFor="e">Email</Label>
                         </div>
-                    )}
+                        <TextInput
+                            id="e"
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="örnek@email.com"
+                        />
+                    </div>
 
-                    {isEditMode && (
-                        <Button
-                            onClick={() => setShowPasswordChangeModal(true)}
-                            className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2"
-                        >
-                            Şifre Değiştir
-                        </Button>
-                    )}
-
-                    {!loginType && !isEditMode && (
-                        <>
-                            <div>
-                                <div className="mb-2 block">
-                                    <Label htmlFor="p">Şifre</Label>
-                                </div>
-                                <TextInput
-                                    id="p"
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="Şifre"
-                                />
-                            </div>
-
-                            <div>
-                                <div className="mb-2 block">
-                                    <Label htmlFor="rp">Şifreyi Tekrarla</Label>
-                                </div>
-                                <TextInput
-                                    id="rp"
-                                    type="password"
-                                    value={rpPassword}
-                                    onChange={(e) => setRpPassword(e.target.value)}
-                                    placeholder="Şifreyi tekrar yazın"
-                                />
-                            </div>
-                        </>
-                    )}
-
-                    {!loginType && !isEditMode && (
-                        <>
-                            <div>
-                                <div className="mb-2 block">
-                                    <Label htmlFor="photo">Profil Fotoğrafı</Label>
-                                </div>
-                                <FileInput
-                                    id="photo"
-                                    onChange={(e) => {
-                                        if (e.target.files && e.target.files[0]) {
-                                            setPhoto(e.target.files[0]);
-                                        }
-                                    }}
-                                />
-                            </div>
-
-                            <div>
-                                <div className="mb-3 block">
-                                    <Label>İlgi Alanlarınız</Label>
-                                    <p className="text-sm text-gray-500 mt-1">
-                                        İlgilendiğiniz konuları seçin ({selectedTags.length} seçildi)
-                                    </p>
-                                </div>
-
-                                {loadingTags ? (
-                                    <div className="text-center py-4">
-                                        <p className="text-gray-500">Yükleniyor...</p>
-                                    </div>
-                                ) : (
-                                    <div className="flex flex-wrap gap-2">
-                                        {availableTags.map((tag) => (
-                                            <button
-                                                key={tag.id}
-                                                type="button"
-                                                onClick={() => toggleTag(tag.id)}
-                                                className={`
-                          px-4 py-2 rounded-full text-sm font-medium
-                          transition-all duration-200 transform
-                          ${selectedTags.includes(tag.id)
-                                                        ? 'bg-blue-600 text-white scale-105 shadow-lg'
-                                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105'
-                                                    }
-                        `}
-                                            >
-                                                {selectedTags.includes(tag.id) && (
-                                                    <span className="mr-1">✓</span>
-                                                )}
-                                                {tag.name}
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </>
-                    )}
+                    <div>
+                        <div className="mb-2 block">
+                            <Label htmlFor="photo">Profil Fotoğrafı</Label>
+                        </div>
+                        <FileInput
+                            id="photo"
+                            onChange={(e) => {
+                                if (e.target.files && e.target.files[0]) {
+                                    setPhoto(e.target.files[0]);
+                                }
+                            }}
+                        />
+                    </div>
 
                     <div className="w-full pt-4">
                         <Button onClick={handleSave} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded">
-                            {isEditMode ? "Güncelle" : (loginType ? "Giriş Yap" : "Kaydol")}
+                            Güncelle
                         </Button>
                     </div>
                 </div>
             </ModalBody>
         </Modal>
-
-        <PasswordChangeModal
-            show={showPasswordChangeModal}
-            setShow={setShowPasswordChangeModal}
-            onSubmit={(pwd, rpwd) => {
-                setPassword(pwd);
-                setRpPassword(rpwd);
-            }}
-        />
-        </>
     );
 };
 

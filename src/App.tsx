@@ -15,6 +15,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, Routes, Route, Link } from "react-router-dom";
 import { ProfileFormModal } from "./components/ProfileFormModal";
 import { PasswordVerificationModal } from "./components/PasswordVerificationModal";
+import { PasswordChangeModal } from "./components/PasswordChangeModal";
 import { api } from "./helper/api";
 import ReviewCard from "./components/ReviewCard";
 import type { Review } from "./types/Profile";
@@ -62,8 +63,10 @@ function AdminPanel() {
 function App() {
     const [loginType, setLoginType] = useState(false);
     const [showModal, setShowModal] = useState(false);
-    const [isEditMode, setIsEditMode] = useState(false);
     const [showPasswordVerification, setShowPasswordVerification] = useState(false);
+    const [passwordVerificationFlow, setPasswordVerificationFlow] = useState<'profile' | 'password'>('profile');
+    const [showProfileFormModal, setShowProfileFormModal] = useState(false);
+    const [showPasswordChangeModal, setShowPasswordChangeModal] = useState(false);
     const [reviews, setReviews] = useState<Review[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -176,10 +179,16 @@ function App() {
                                 </DropdownItem>
                             )}
                             <DropdownItem onClick={() => {
-                                setIsEditMode(true);
+                                setPasswordVerificationFlow('profile');
                                 setShowPasswordVerification(true);
                             }}>
                                 Profili Düzenle
+                            </DropdownItem>
+                            <DropdownItem onClick={() => {
+                                setPasswordVerificationFlow('password');
+                                setShowPasswordVerification(true);
+                            }}>
+                                Şifre Değiştir
                             </DropdownItem>
                             <DropdownDivider />
                             <DropdownItem onClick={handleLogout}>Çıkış yap</DropdownItem>
@@ -257,26 +266,37 @@ function App() {
                 userId={user.id || 0}
                 onVerifySuccess={() => {
                     setShowPasswordVerification(false);
-                    setLoginType(false);
-                    setShowModal(true);
+                    if (passwordVerificationFlow === 'profile') {
+                        setShowProfileFormModal(true);
+                    } else {
+                        setShowPasswordChangeModal(true);
+                    }
                 }}
             />
 
             <ProfileFormModal
-                show={showModal}
-                setShow={(show) => {
-                    setShowModal(show);
-                    if (!show) setIsEditMode(false);
-                }}
-                loginType={loginType}
-                onLoginSuccess={handleLoginSuccess}
-                isEditMode={isEditMode}
+                show={showProfileFormModal}
+                setShow={setShowProfileFormModal}
                 userData={user.isLoggedIn ? {
                     id: user.id || 0,
                     username: user.name,
                     email: user.mail,
                     pp: user.pp
-                } : undefined}
+                } : {
+                    id: 0,
+                    username: '',
+                    email: '',
+                    pp: ''
+                }}
+            />
+
+            <PasswordChangeModal
+                show={showPasswordChangeModal}
+                setShow={setShowPasswordChangeModal}
+                onSubmit={(password, rpPassword) => {
+                    // Handle password change submission here
+                    setShowPasswordChangeModal(false);
+                }}
             />
         </>
     );
