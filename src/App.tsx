@@ -62,7 +62,6 @@ function App() {
     const [loginType, setLoginType] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [reviews, setReviews] = useState<Review[]>([]);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     const [user, setUser] = useState({
         isLoggedIn: false,
@@ -72,44 +71,48 @@ function App() {
         pp: "",
         mail: ""
     });
-      useEffect(() => {
-    const user = localStorage.getItem('user');
-    setIsLoggedIn(!!user);
-  }, []);
-     const fetchReviews = async () => {
-            try {
-                const response = await api.get('/review');
-                const formattedData: Review[] = response.data.map((item: any) => ({
-                    id: item.id,
-                    title: item.title,
-                    desc: item.desc,
-                    img: item.img,
-                    date: new Date(item.date),
-                    comments: item.comments || []
-                }));
-                setReviews(formattedData);
-            } catch (error) {
-                console.error(error);
-            }
-        };
 
     useEffect(() => {
-       
+        const savedUser = localStorage.getItem('user');
+        if (savedUser) {
+            setUser(JSON.parse(savedUser));
+        }
+    }, []);
+
+    const fetchReviews = async () => {
+        try {
+            const response = await api.get('/review');
+            const formattedData: Review[] = response.data.map((item: any) => ({
+                id: item.id,
+                title: item.title,
+                desc: item.desc,
+                img: item.img,
+                date: new Date(item.date),
+                comments: item.comments || []
+            }));
+            setReviews(formattedData);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    useEffect(() => {
         fetchReviews();
     }, []);
 
-    const handleLoginSuccess = (userId: number,e) => {
+    const handleLoginSuccess = (userId: number, e) => {
         api.get(`profiles/${userId}`)
             .then((response) => {
-                setUser({
+                const userData = {
                     isLoggedIn: true,
                     isAdmin: response.data.profileTypeId,
                     id: userId,
                     name: response.data.username,
                     pp: response.data.photo || "https://flowbite.com/docs/images/people/profile-picture-5.jpg",
                     mail: response.data.email
-                });
-                  localStorage.setItem('user', JSON.stringify(user));
+                };
+                setUser(userData);
+                localStorage.setItem('user', JSON.stringify(userData));
             })
             .catch((err) => {
                 console.error(err);
@@ -125,10 +128,8 @@ function App() {
             pp: "",
             mail: ""
         });
-          localStorage.removeItem('user');
+        localStorage.removeItem('user');
         navigate('/');
-        
- 
     };
 
     const navigate = useNavigate();
@@ -140,7 +141,6 @@ function App() {
                     onClick={() => {
                         setShowModal(false);
                         navigate('/');
-                        
                     }}
                     className="cursor-pointer"
                 >
@@ -223,7 +223,6 @@ function App() {
                     <Route
                         path="/admin"
                         element={
-                            // Kullanıcı admin ise Tabloyu göster, değilse Ana Sayfaya at
                             (user.isAdmin === 2) ? (
                                 <div className="container mx-auto mt-10 p-4">
                                     <h2 className="text-2xl font-bold mb-4">Yönetici Paneli</h2>
