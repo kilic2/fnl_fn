@@ -1,208 +1,255 @@
 import {
-  Table,
-  TableBody,
-  TableHead,
-  TableHeadCell,
-  TableRow,
-  Button,
-  Label,
-  TextInput,
-  Textarea,Modal,
-  ModalBody,
-  ModalHeader
+    Avatar,
+    Dropdown,
+    DropdownDivider,
+    DropdownHeader,
+    DropdownItem,
+    Navbar,
+    NavbarBrand,
+    NavbarToggle,
+    NavbarLink,
+    NavbarCollapse,
+    Table,
 } from "flowbite-react";
-import { toast } from "sonner";
-import { useEffect, useState } from "react";
-import type { Profile } from "../types/Profile";
-import { ProfileRow } from "./ProfileRow";
-import { ProfileFormModal } from "./ProfileFormModal";
-import { api } from "../helper/api";
-import { profile } from "console";
-import {  HiOutlineQuestionMarkCircle } from "react-icons/hi";
+import { useState, useEffect } from "react";
+import { useNavigate, Routes, Route, Link } from "react-router-dom";
+import { ProfileFormModal } from "./components/ProfileFormModal";
+import { api } from "./helper/api";
+import ReviewCard from "./components/ReviewCard";
+import type { Review } from "./types/Profile";
+import ReviewContent from "./components/ReviewContent";
+import ProfileTable from "./components/ProfileTable";
 
-const ProfileTable = ({ onReviewAdded }: ProfileTableProps) => {
-  const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [commentText, setCommentText] = useState("");
-  const [titleText, setTitleText] = useState("");
-  const [photo, setPhoto] = useState<File | null>(null);
-  const [showSure, setShowSure] = useState(false);
-  function fetchProfiles() {
-    api.get("profiles").then((res) => setProfiles(res.data));
-  }
+function AdminPanel() {
+    const [users, setUsers] = useState<any[]>([]);
 
-  useEffect(() => {
-    fetchProfiles();
-  }, []);
+    useEffect(() => {
+        api.get('/profiles')
+            .then(res => setUsers(res.data))
+            .catch(err => console.error(err));
+    }, []);
 
-  function handleClick(profile: Profile) {
-    console.log(profile);
-  }
+    return (
+        <div className="container mx-auto p-4">
+            <h2 className="text-2xl font-bold mb-6">Kullanıcı Yönetimi</h2>
+            <div className="overflow-x-auto">
+                <Table hoverable>
+                    <Table.Head>
+                        <Table.HeadCell>ID</Table.HeadCell>
+                        <Table.HeadCell>Kullanıcı Adı</Table.HeadCell>
+                        <Table.HeadCell>Email</Table.HeadCell>
+                        <Table.HeadCell>Rol ID</Table.HeadCell>
+                    </Table.Head>
+                    <Table.Body className="divide-y">
+                        {users.map((user) => (
+                            <Table.Row key={user.id} className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                                <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                                    {user.id}
+                                </Table.Cell>
+                                <Table.Cell>{user.username}</Table.Cell>
+                                <Table.Cell>{user.email}</Table.Cell>
+                                <Table.Cell>{user.profileTypeId}</Table.Cell>
+                            </Table.Row>
+                        ))}
+                    </Table.Body>
+                </Table>
+            </div>
+        </div>
+    );
+}
 
-  const handleSubmitComment = async (e: React.FormEvent) => {
-    e.preventDefault();
+function App() {
+    const [loginType, setLoginType] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [reviews, setReviews] = useState<Review[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    if (!commentText.trim()) {
-      toast.error('Lütfen bir yorum girin');
-      return;
+    const [user, setUser] = useState({
+        isLoggedIn: false,
+        isAdmin: 2,
+        id: null as number | null,
+        name: "",
+        pp: "",
+        mail: ""
+    });
+
+    useEffect(() => {
+        const savedUser = localStorage.getItem('user');
+        if (savedUser) {
+            setUser(JSON.parse(savedUser));
+        }
+        setLoading(false);
+    }, []);
+
+    const fetchReviews = async () => {
+        try {
+            const response = await api.get('/review');
+            const formattedData: Review[] = response.data.map((item: any) => ({
+                id: item.id,
+                title: item.title,
+                desc: item.desc,
+                img: item.img,
+                date: new Date(item.date),
+                comments: item.comments || []
+            }));
+            setReviews(formattedData);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    useEffect(() => {
+        fetchReviews();
+    }, []);
+
+    const handleLoginSuccess = (userId: number, e) => {
+        api.get(`profiles/${userId}`)
+            .then((response) => {
+                const userData = {
+                    isLoggedIn: true,
+                    isAdmin: response.data.profileTypeId,
+                    id: userId,
+                    name: response.data.username,
+                    pp: response.data.photo || "https://flowbite.com/docs/images/people/profile-picture-5.jpg",
+                    mail: response.data.email
+                };
+                setUser(userData);
+                localStorage.setItem('user', JSON.stringify(userData));
+            })
+            .catch((err) => {
+                console.error(err);
+            });
+    };
+
+    const handleLogout = () => {
+        setUser({
+            isLoggedIn: false,
+            isAdmin: 2,
+            id: null,
+            name: "",
+            pp: "",
+            mail: ""
+        });
+        localStorage.removeItem('user');
+        navigate('/');
+    };
+
+    const navigate = useNavigate();
+
+    if (loading) {
+        return <div className="flex items-center justify-center min-h-screen">Yükleniyor...</div>;
     }
-    if (!titleText.trim()) {
-      toast.error('Lütfen bir başlık girin');
-      return;
-    }
 
-    try {
-      const formData = new FormData();
-      formData.append("title", titleText);
-      formData.append("desc", commentText);
+    return (
+        <>
+            <Navbar fluid rounded>
+                <NavbarBrand
+                    onClick={() => {
+                        setShowModal(false);
+                        navigate('/');
+                    }}
+                    className="cursor-pointer"
+                >
+                    <img src="\Gemini_Generated_Image_rj5920rj5920rj59.png" className="mr-3 h-6 sm:h-9" alt="Logo" />
+                    <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">Donanım Forum</span>
+                </NavbarBrand>
 
-      if (photo) {
-        formData.append("photo", photo);
-      }
-
-      const response = await api.post('/review', formData);
-      console.log('Yorum başarıyla gönderildi:', response.data);
-      toast.success('Yorum başarıyla gönderildi');
-      
-      setTitleText("");
-      setCommentText("");
-      setPhoto(null);
-
-    } catch (error) {
-      toast.error('Review gönderilirken hata oluştu');
-      console.error('Yorum gönderilirken hata oluştu:', error);
-    }
-  };
-
-  return (
-    <>
-      <ProfileFormModal fetchProfiles={fetchProfiles} profile={null} />
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableHeadCell>Id</TableHeadCell>
-              <TableHeadCell>Fotoğraf</TableHeadCell>
-              <TableHeadCell>Kullanıcı Adı</TableHeadCell>
-              <TableHeadCell>Email</TableHeadCell>
-              <TableHeadCell>Profil Tipi</TableHeadCell>
-              <TableHeadCell>Tagler</TableHeadCell>
-              <TableHeadCell>İşlemler</TableHeadCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {profiles.map((p) => (
-              <ProfileRow
-                key={p.id}
-                fetchProfiles={fetchProfiles}
-                profile={p}
-                handleClick={handleClick}
-              />
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-             <Modal
-                            show={showSure}
-                            size="md"
-                            onClose={() => setShowSure(false)}
-                            popup
+                <div className="flex md:order-2">
+                    {user.isLoggedIn ? (
+                        <Dropdown
+                            arrowIcon={false}
+                            inline
+                            label={
+                                <Avatar alt="User settings" img={user.pp} rounded />
+                            }
                         >
-                            <ModalHeader />
-                            <ModalBody>
-                                <div className="text-center">
-                                    <HiOutlineQuestionMarkCircle className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200" />
-                                    <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
-                                       Review eklemek istediğinize emin misiniz?
-                                    </h3>
-                                    <div className="flex justify-center gap-4">
-                                        <Button
-                                            color="green"
-                                            onClick={() => {{handleSubmitComment};  setShowSure(false);}}
-                                        
-                                        >
-                                            Evet, eminim
-                                        </Button>
-                                        <Button color="alternative" onClick={() => setShowSure(false)}>
-                                            Hayır, iptal
-                                        </Button>
-                                    </div>
+                            <DropdownHeader>
+                                <span className="block text-sm">{user.name}</span>
+                                <span className="block truncate text-sm font-medium">{user.mail}</span>
+                            </DropdownHeader>
+                            {user.isAdmin === 2 && (
+                                <DropdownItem onClick={() => navigate('/admin')}>
+                                    Admin Paneli
+                                </DropdownItem>
+                            )}
+                            <DropdownDivider />
+                            <DropdownItem onClick={handleLogout}>Çıkış yap</DropdownItem>
+                        </Dropdown>
+                    ) : (
+                        <div className="flex gap-4">
+                            <button
+                                onClick={() => { setLoginType(true); setShowModal(true); }}
+                                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+                            >
+                                Giriş Yap
+                            </button>
+                            <button
+                                onClick={() => { setLoginType(false); setShowModal(true); }}
+                                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+                            >
+                                Kayıt Ol
+                            </button>
+                        </div>
+                    )}
+                    <NavbarToggle />
+                </div>
+            </Navbar>
+
+            <main className="bg-gray-50 min-h-screen p-4">
+                <Routes>
+                    <Route path="/" element={
+                        <>
+                            <div style={{ backgroundColor: '#ffffff', padding: '80px 0', borderBottom: '1px solid #e5e7eb', marginBottom: '2rem' }}>
+                                <div className="container mx-auto px-4 text-center">
+                                    <h1 style={{ fontSize: '3rem', fontWeight: 'bold', color: '#000000', marginBottom: '1rem', textTransform: 'uppercase' }}>
+                                        Güncel Donanım İncelemeleri
+                                    </h1>
+                                    <p style={{ fontSize: '1.25rem', color: '#6b7280', maxWidth: '48rem', margin: '0 auto' }}>
+                                        En son teknoloji ürünlerinin detaylı analizleri ve performans testleri
+                                    </p>
                                 </div>
-                            </ModalBody>
-                        </Modal>
-      <div className="bg-gray-50 dark:bg-gray-900 py-8 lg:py-16 antialiased">
-        <section className="mt-8 p-6 bg-white rounded-lg shadow-md">
-          <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-            Review Ekle
-          </h5>
+                            </div>
+                            <div className="container mx-auto">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                    {reviews.map((item) => (
+                                        <Link to={`/discussion/${item.id}`} key={item.id}>
+                                            <ReviewCard
+                                                title={item.title}
+                                                desc={item.desc}
+                                                img={item.img}
+                                                date={item.date}
+                                            />
+                                        </Link>
+                                    ))}
+                                </div>
+                            </div>
+                        </>
+                    } />
+                    <Route path="/discussion/:id" element={<ReviewContent user={user} />} />
+                    <Route
+                        path="/admin"
+                        element={
+                            user.isLoggedIn && user.isAdmin === 2 ? (
+                                <div className="container mx-auto mt-10 p-4">
+                                    <h2 className="text-2xl font-bold mb-4">Yönetici Paneli</h2>
+                                    <ProfileTable onReviewAdded={fetchReviews} />
+                                </div>
+                            ) : (
+                                <div className="text-center mt-10">Yetkiniz yok!</div>
+                            )
+                        }
+                    />
+                </Routes>
+            </main>
 
-          <hr className="h-px bg-gray-200 border-0 dark:bg-gray-700 my-4" />
+            <ProfileFormModal
+                show={showModal}
+                setShow={setShowModal}
+                loginType={loginType}
+                onLoginSuccess={handleLoginSuccess}
+            />
+        </>
+    );
+}
 
-          <form className="flex flex-col gap-4" >
-            <div>
-              <div className="mb-2 block">
-                <Label htmlFor="title" value="Başlık Ekle" />
-              </div>
-              <TextInput
-                id="title"
-                type="text"
-                placeholder="Örn: Harika bir deneyim!"
-                required
-                value={titleText}
-                onChange={(e) => setTitleText(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <div className="mb-2 block">
-                <Label htmlFor="photo-upload" value="Fotoğraf Ekle" />
-              </div>
-              <div className="flex items-center gap-3">
-                <label htmlFor="photo-upload">
-                  <Button color="light" as="span" className="cursor-pointer">
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
-                    Fotoğraf Seç
-                  </Button>
-                </label>
-                <input
-                  id="photo-upload"
-                  type="file"
-                  className="hidden"
-                  onChange={(e) => {
-                    if (e.target.files && e.target.files[0]) {
-                      setPhoto(e.target.files[0]);
-                    }
-                  }}
-                />
-                <span className="text-xs text-gray-500">
-                  {photo ? photo.name : "Dosya seçilmedi"}
-                </span>
-              </div>
-            </div>
-
-            <div>
-              <div className="mb-2 block">
-                <Label htmlFor="content" value="İçerik Ekle" />
-              </div>
-              <Textarea
-                id="content"
-                placeholder="Yorumunuzu buraya yazın..."
-                required
-                rows={4}
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-              />
-            </div>
-
-            <Button type="submit" color="dark" onClick={() => setShowSure(true)}>
-              Gönder
-            </Button>
-          </form>
-        </section>
-      </div>
-    </>
-  );
-};
-
-export default ProfileTable;
+export default App;
