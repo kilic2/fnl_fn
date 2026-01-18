@@ -305,6 +305,8 @@ export const ProfileFormModal = ({ show, setShow, loginType, onLoginSuccess, isE
                         </div>
                     )}
 
+                    {!loginType && !isEditMode && (
+                        <>
                             <div>
                                 <div className="mb-2 block">
                                     <Label htmlFor="photo">Profil Fotoğrafı</Label>
