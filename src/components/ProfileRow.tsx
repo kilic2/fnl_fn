@@ -27,21 +27,25 @@ export const ProfileRow = ({ fetchProfiles, profile, handleClick, currentUserId 
     const [showDelete, setShowDelete] = useState(false);
     const [isAdmin, setIsAdmin] = useState(profile.profileTypeId === 2);
 
-    const handleAdminToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleAdminToggle = async (e: React.ChangeEvent<HTMLInputElement>) => {
         e.stopPropagation();
         const newAdminStatus = isAdmin ? 1 : 2;
         
-        api
-            .patch(`/profiles/${profile.id}`, { profileTypeId: newAdminStatus })
-            .then(() => {
-                setIsAdmin(!isAdmin);
-                fetchProfiles();
+        try {
+            const response = await api.patch(`/profiles/${profile.id}`, { profileTypeId: newAdminStatus });
+            console.log('Patch response:', response.data);
+            
+            if (response.status === 200 || response.status === 201) {
+                setIsAdmin(newAdminStatus === 2);
                 toast.success(newAdminStatus === 2 ? 'Kullanıcı admin yapıldı' : 'Admin yetkisi kaldırıldı');
-            })
-            .catch((err) => {
-                console.error(err);
-                toast.error('Admin durumu güncellenirken hata oluştu');
-            });
+                await fetchProfiles();
+            } else {
+                toast.error('Beklenmeyen yanıt: ' + response.status);
+            }
+        } catch (err: any) {
+            console.error('Patch error:', err.response?.data || err.message);
+            toast.error('Admin durumu güncellenirken hata oluştu: ' + (err.response?.data?.message || err.message));
+        }
     };
 
     return (
