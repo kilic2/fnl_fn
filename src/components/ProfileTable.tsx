@@ -19,9 +19,7 @@ import { ProfileFormModal } from "./ProfileFormModal";
 import { api } from "../helper/api";
 import { profile } from "console";
 import {  HiOutlineQuestionMarkCircle } from "react-icons/hi";
-interface ProfileTableProps {
-  onReviewAdded: () => Promise<void> | void; 
-}
+
 const ProfileTable = ({ onReviewAdded }: ProfileTableProps) => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [commentText, setCommentText] = useState("");
@@ -119,7 +117,7 @@ const ProfileTable = ({ onReviewAdded }: ProfileTableProps) => {
                                     <div className="flex justify-center gap-4">
                                         <Button
                                             color="green"
-                                            onClick={() => {{handleSubmitComment}; onReviewAdded(); setShowSure(false);}}
+                                            onClick={() => {{handleSubmitComment};  setShowSure(false);}}
                                         
                                         >
                                             Evet, eminim

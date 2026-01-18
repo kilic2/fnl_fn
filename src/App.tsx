@@ -251,7 +251,7 @@ function App() {
                             (user.isAdmin === 2) ? (
                                 <div className="container mx-auto mt-10 p-4">
                                     <h2 className="text-2xl font-bold mb-4">Yönetici Paneli</h2>
-                                    <ProfileTable onReviewAdded={fetchReviews} />
+                                    <ProfileTable  />
                                 </div>
                             ) : (
                                 <div className="text-center mt-10">Yetkiniz yok!</div>
