@@ -295,14 +295,15 @@ export const ProfileFormModal = ({ show, setShow, loginType, onLoginSuccess, isE
                             <div className="mb-2 block">
                                 <Label htmlFor="rp">Şifreyi Tekrarla</Label>
                             </div>
-                                <TextInput
-                                    id="rp"
-                                    type="password"
-                                    value={rpPassword}
-                                    onChange={(e) => setRpPassword(e.target.value)}
-                                    placeholder="Şifreyi tekrar yazın"
-                                />
-                            </div>
+                            <TextInput
+                                id="rp"
+                                type="password"
+                                value={rpPassword}
+                                onChange={(e) => setRpPassword(e.target.value)}
+                                placeholder="Şifreyi tekrar yazın"
+                            />
+                        </div>
+                    )}
 
                             <div>
                                 <div className="mb-2 block">
